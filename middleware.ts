@@ -6,7 +6,7 @@ const isPublicRoute = createRouteMatcher([
   '/',
   '/help(.*)',
   '/contact(.*)',
-  'gentone.ai.help@gmail.com(.*)',
+  '/gentone.ai.help@gmail.com(.*)',
   '/terms(.*)',
   '/privacy(.*)',
   '/cookies(.*)',]);
