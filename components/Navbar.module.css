@@ -1,0 +1,85 @@
+.nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px 64px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: bold;
+  font-size: 1.2rem;
+}
+
+.iconBox {
+  background-color: #2563eb;
+  padding: 8px;
+  border-radius: 8px;
+  display: flex;
+}
+
+.links {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+}
+
+.link {
+  color: #94a3b8;
+  font-size: 0.9rem;
+  transition: color 0.2s;
+}
+
+.link:hover { color: white; }
+
+.btn {
+  background-color: #2563eb;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 50px;
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
+}
+/* ... (mantém o código anterior e adiciona/atualiza estas classes) */
+
+.links {
+  display: flex;
+  align-items: center;
+  gap: 24px; /* Ajustado para caber os botões */
+}
+
+.signInBtn {
+  color: #94a3b8;
+  font-size: 0.9rem;
+  font-weight: 500;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.signInBtn:hover {
+  color: white;
+}
+
+.signUpBtn {
+  background-color: #2563eb;
+  color: white;
+  padding: 10px 22px;
+  border-radius: 50px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: background-color 0.2s, transform 0.2s;
+}
+
+.signUpBtn:hover {
+  background-color: #1d4ed8;
+  transform: translateY(-1px);
+}

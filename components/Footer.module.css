@@ -1,0 +1,78 @@
+.footer {
+  background-color: #020617;
+  border-top: 1px solid #1e293b;
+  padding: 80px 20px 40px 20px;
+  color: #94a3b8;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 40px;
+}
+
+.brandSection {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: white;
+  font-weight: bold;
+  font-size: 1.2rem;
+}
+
+.columnTitle {
+  color: white;
+  font-weight: 600;
+  margin-bottom: 20px;
+  font-size: 1rem;
+}
+
+.linkList {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.link {
+  font-size: 0.9rem;
+  transition: color 0.2s;
+  cursor: pointer;
+}
+
+.link:hover {
+  color: #2563eb;
+}
+
+.socialIcons {
+  display: flex;
+  gap: 15px;
+  margin-top: 10px;
+}
+
+.socialLink {
+  color: #94a3b8;
+  transition: transform 0.2s, color 0.2s;
+}
+
+.socialLink:hover {
+  color: white;
+  transform: translateY(-3px);
+}
+
+.bottomBar {
+  max-width: 1200px;
+  margin: 60px auto 0 auto;
+  padding-top: 30px;
+  border-top: 1px solid #1e293b;
+  text-align: center;
+  font-size: 0.8rem;
+}
