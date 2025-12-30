@@ -49,7 +49,7 @@ export default function HelpCenter() {
 
         <div style={{ marginTop: '60px', textAlign: 'center', padding: '40px', borderTop: '1px solid #1e293b' }}>
           <p>Still have questions?</p>
-          <Link href="/contact" style={{ 
+          <Link href="https://wa.me/244933269713" style={{ 
             display: 'inline-block', marginTop: '15px', padding: '12px 25px', 
             background: '#3b82f6', color: 'white', borderRadius: '8px', textDecoration: 'none', fontWeight: 'bold' 
           }}>
