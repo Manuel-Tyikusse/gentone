@@ -20,7 +20,7 @@ export default function Footer() {
           <div className={styles.socialIcons}>
             <Link href="https://instagram.com/gentoneai" className={styles.socialLink} target="_blank"><Instagram size={20} /></Link>
             <Link href="https://facebook.com/profile.php?id=61585573574868" className={styles.socialLink} target="_blank"><Facebook size={20} /></Link>
-            <Link href="https://twitter.com" className={styles.socialLink} target="_blank"><Twitter size={20} /></Link>
+            <Link href="https://x.com/ToneGen57927" className={styles.socialLink} target="_blank"><Twitter size={20} /></Link>
             <Link href="https://wa.me/244933269713" className={styles.socialLink} target="_blank"><MessageCircle size={20} /></Link>
           </div>
         </div>
@@ -30,8 +30,8 @@ export default function Footer() {
           <h4 className={styles.columnTitle}>Support</h4>
           <ul className={styles.linkList}>
             <li><Link href="/help" className={styles.link}>Help Center</Link></li>
-            <li><Link href="/contact" className={styles.link}>Contact Us</Link></li>
-            <li><Link href="mailto:support@gentone.com" className={styles.link}>Support Email</Link></li>
+            <li><Link href="https://wa.me/244933269713"className={styles.link}>Contact Us</Link></li>
+            <li><Link href="gentone.ai.help@gmail.com" className={styles.link}>Support Email</Link></li>
           </ul>
         </div>
 
