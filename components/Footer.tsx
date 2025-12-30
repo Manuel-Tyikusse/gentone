@@ -18,10 +18,10 @@ export default function Footer() {
             Transforming your ideas into professional video scripts in seconds with AI power.
           </p>
           <div className={styles.socialIcons}>
-            <Link href="https://instagram.com" className={styles.socialLink} target="_blank"><Instagram size={20} /></Link>
-            <Link href="https://facebook.com" className={styles.socialLink} target="_blank"><Facebook size={20} /></Link>
+            <Link href="https://instagram.com/gentoneai" className={styles.socialLink} target="_blank"><Instagram size={20} /></Link>
+            <Link href="https://facebook.com/profile.php?id=61585573574868" className={styles.socialLink} target="_blank"><Facebook size={20} /></Link>
             <Link href="https://twitter.com" className={styles.socialLink} target="_blank"><Twitter size={20} /></Link>
-            <Link href="https://whatsapp.com" className={styles.socialLink} target="_blank"><MessageCircle size={20} /></Link>
+            <Link href="https://wa.me/244933269713" className={styles.socialLink} target="_blank"><MessageCircle size={20} /></Link>
           </div>
         </div>
 
