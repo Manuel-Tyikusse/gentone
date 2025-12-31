@@ -1,6 +1,6 @@
 import styles from './Footer.module.css';
 import { Video, Instagram, Facebook, Twitter, MessageCircle } from 'lucide-react';
-import Link from 'next/link'; // Importante para navegação interna no Next.js
+import Link from 'next/link';
 
 export default function Footer() {
   return (
@@ -18,10 +18,10 @@ export default function Footer() {
             Transforming your ideas into professional video scripts in seconds with AI power.
           </p>
           <div className={styles.socialIcons}>
-            <Link href="https://instagram.com/gentoneai" className={styles.socialLink} target="_blank"><Instagram size={20} /></Link>
-            <Link href="https://facebook.com/profile.php?id=61585573574868" className={styles.socialLink} target="_blank"><Facebook size={20} /></Link>
-            <Link href="https://x.com/ToneGen57927" className={styles.socialLink} target="_blank"><Twitter size={20} /></Link>
-            <Link href="https://wa.me/244933269713" className={styles.socialLink} target="_blank"><MessageCircle size={20} /></Link>
+            <a href="https://instagram.com/gentoneai" className={styles.socialLink} target="_blank" rel="noopener noreferrer"><Instagram size={20} /></a>
+            <a href="https://facebook.com/profile.php?id=61585573574868" className={styles.socialLink} target="_blank" rel="noopener noreferrer"><Facebook size={20} /></a>
+            <a href="https://x.com/ToneGen57927" className={styles.socialLink} target="_blank" rel="noopener noreferrer"><Twitter size={20} /></a>
+            <a href="https://wa.me/244933269713" className={styles.socialLink} target="_blank" rel="noopener noreferrer"><MessageCircle size={20} /></a>
           </div>
         </div>
 
@@ -30,7 +30,7 @@ export default function Footer() {
           <h4 className={styles.columnTitle}>Support</h4>
           <ul className={styles.linkList}>
             <li><Link href="/help" className={styles.link}>Help Center</Link></li>
-            <li><Link href="https://wa.me/244933269713"className={styles.link}>Contact Us</Link></li>
+            <li><a href="https://wa.me/244933269713" className={styles.link} target="_blank" rel="noopener noreferrer">Contact Us</a></li>
             <li><a href="mailto:gentone.ai.help@gmail.com" className={styles.link}>Support Email</a></li>
           </ul>
         </div>
@@ -39,7 +39,6 @@ export default function Footer() {
         <div>
           <h4 className={styles.columnTitle}>Legal</h4>
           <ul className={styles.linkList}>
-            {/* Estes links agora apontam para as páginas que criámos */}
             <li><Link href="/terms" className={styles.link}>Terms of Service</Link></li>
             <li><Link href="/privacy" className={styles.link}>Privacy Policy</Link></li>
             <li><Link href="/cookies" className={styles.link}>Cookies</Link></li>
