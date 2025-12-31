@@ -18,6 +18,7 @@ export default function Footer() {
             Transforming your ideas into professional video scripts in seconds with AI power.
           </p>
           <div className={styles.socialIcons}>
+            <li><Link href="/affiliates" className={styles.link}>Help Center</Link></li>
             <a href="https://instagram.com/gentoneai" className={styles.socialLink} target="_blank" rel="noopener noreferrer"><Instagram size={20} /></a>
             <a href="https://facebook.com/profile.php?id=61585573574868" className={styles.socialLink} target="_blank" rel="noopener noreferrer"><Facebook size={20} /></a>
             <a href="https://x.com/ToneGen57927" className={styles.socialLink} target="_blank" rel="noopener noreferrer"><Twitter size={20} /></a>
