@@ -1,7 +1,8 @@
+"use client"; 
 import { ArrowLeft, Check } from "lucide-react";
 import Link from "next/link";
 // 1. Importamos o useEffect para ativar o overlay assim que a página carregar
-"use client"; 
+
 import { useEffect } from "react";
 
 export default function PricingPage() {
