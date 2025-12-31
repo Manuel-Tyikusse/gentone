@@ -31,7 +31,7 @@ export default function Footer() {
           <ul className={styles.linkList}>
             <li><Link href="/help" className={styles.link}>Help Center</Link></li>
             <li><Link href="https://wa.me/244933269713"className={styles.link}>Contact Us</Link></li>
-            <li><a href="gentone.ai.help@gmail.com" className={styles.link}>Support Email</a></li>
+            <li><a href="mailto:gentone.ai.help@gmail.com" className={styles.link}>Support Email</a></li>
           </ul>
         </div>
 
