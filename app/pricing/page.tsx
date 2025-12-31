@@ -1,11 +1,37 @@
 import { ArrowLeft, Check } from "lucide-react";
 import Link from "next/link";
+// 1. Importamos o useEffect para ativar o overlay assim que a página carregar
+"use client"; 
+import { useEffect } from "react";
 
 export default function PricingPage() {
+  // 2. Ativamos o script do Lemon Squeezy
+  useEffect(() => {
+    if (typeof window !== "undefined" && (window as any).createLemonSqueezy) {
+      (window as any).createLemonSqueezy();
+    }
+  }, []);
+
   const plans = [
-    { name: "Starter", credits: 10, price: "$9", link: "TEU_LINK_LEMON_SQUEEZY_AQUI" },
-    { name: "Pro", credits: 50, price: "$29", link: "TEU_LINK_LEMON_SQUEEZY_AQUI", popular: true },
-    { name: "Elite", credits: 200, price: "$79", link: "TEU_LINK_LEMON_SQUEEZY_AQUI" },
+    { 
+      name: "Starter", 
+      credits: 15, 
+      price: "$9", 
+      link: "https://nedra.lemonsqueezy.com/checkout/buy/335fdcc3-79e1-4d3e-9551-186d4c7b64c3?embed=1" 
+    },
+    { 
+      name: "Pro", 
+      credits: 50, 
+      price: "$27", 
+      link: "https://nedra.lemonsqueezy.com/checkout/buy/a089f67e-edbc-4cb5-8c4c-c2c71128032c?embed=1", 
+      popular: true 
+    },
+    { 
+      name: "Elite", 
+      credits: 200, 
+      price: "$67", 
+      link: "https://nedra.lemonsqueezy.com/checkout/buy/854fc472-42c3-4eb7-acf0-5ed1a55f3366?embed=1" 
+    },
   ];
 
   return (
@@ -38,8 +64,10 @@ export default function PricingPage() {
                 <li style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}><Check size={18} color="#22c55e"/> High-Quality AI</li>
               </ul>
 
-              <Link href={plan.link} style={{
+              {/* 3. Aqui está a mudança principal: Adicionámos a class "lemonsqueezy-button" */}
+              <a href={plan.link} className="lemonsqueezy-button" style={{
                 display: 'block',
+                textAlign: 'center',
                 padding: '15px',
                 background: plan.popular ? '#3b82f6' : 'white',
                 color: plan.popular ? 'white' : '#020617',
@@ -48,7 +76,7 @@ export default function PricingPage() {
                 fontWeight: 'bold'
               }}>
                 Buy Credits Now
-              </Link>
+              </a>
             </div>
           ))}
         </div>
