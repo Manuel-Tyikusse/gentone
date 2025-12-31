@@ -33,9 +33,17 @@
 "use client";
 
 import { Check, Zap, Rocket, Crown } from "lucide-react";
-import Link from "next/link";
+import { useEffect } from "react"; // 1. Importado useEffect
 
 export default function PricingSection() {
+  
+  // 2. Hook para ativar o overlay do Lemon Squeezy
+  useEffect(() => {
+    if (typeof window !== "undefined" && (window as any).createLemonSqueezy) {
+      (window as any).createLemonSqueezy();
+    }
+  }, []);
+
   const plans = [
     {
       name: "Starter",
@@ -45,7 +53,8 @@ export default function PricingSection() {
       description: "Perfect for trying out GenTone and creating your first scripts.",
       features: ["15 AI-Generated Scripts", "All Tones Included", "Multi-language Support", "Life-time Access"],
       buttonText: "Get Started",
-      variantId: "COLOCA_AQUI_O_ID_DO_LEMON_SQUEEZY", 
+      // 3. Inseri o teu link real do Starter
+      checkoutUrl: "https://nedra.lemonsqueezy.com/checkout/buy/335fdcc3-79e1-4d3e-9551-186d4c7b64c3?embed=1", 
       popular: false
     },
     {
@@ -56,7 +65,8 @@ export default function PricingSection() {
       description: "Our most popular plan for consistent content creators.",
       features: ["60 AI-Generated Scripts", "Priority AI Processing", "Advanced Tone Settings", "Commercial License", "24/7 Support"],
       buttonText: "Buy Pro Now",
-      variantId: "COLOCA_AQUI_O_ID_DO_LEMON_SQUEEZY",
+      // 3. Inseri o teu link real do Pro
+      checkoutUrl: "https://nedra.lemonsqueezy.com/checkout/buy/a089f67e-edbc-4cb5-8c4c-c2c71128032c?embed=1",
       popular: true
     },
     {
@@ -67,7 +77,8 @@ export default function PricingSection() {
       description: "Best value for agencies and professional YouTubers.",
       features: ["200 AI-Generated Scripts", "Early Access to New Features", "Highest Quality AI Model", "Dedicated Manager", "Unlimited History"],
       buttonText: "Go Elite",
-      variantId: "COLOCA_AQUI_O_ID_DO_LEMON_SQUEEZY",
+      // 3. Inseri o teu link real do Elite
+      checkoutUrl: "https://nedra.lemonsqueezy.com/checkout/buy/854fc472-42c3-4eb7-acf0-5ed1a55f3366?embed=1",
       popular: false
     }
   ];
@@ -76,7 +87,6 @@ export default function PricingSection() {
     <section id="pricing" style={{ padding: '100px 20px', background: '#020617', color: 'white', fontFamily: 'sans-serif' }}>
       <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
         
-        {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: '60px' }}>
           <h2 style={{ fontSize: '2.5rem', fontWeight: 'bold', marginBottom: '15px' }}>Simple, Credit-Based Pricing</h2>
           <p style={{ color: '#94a3b8', fontSize: '1.2rem', maxWidth: '600px', margin: '0 auto' }}>
@@ -84,7 +94,6 @@ export default function PricingSection() {
           </p>
         </div>
 
-        {/* Pricing Cards */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '30px', alignItems: 'center' }}>
           {plans.map((plan) => (
             <div 
@@ -136,8 +145,10 @@ export default function PricingSection() {
                 ))}
               </ul>
 
-              <Link 
-                href={`https://gentone.lemonsqueezy.com/checkout/buy/${plan.variantId}`}
+              {/* 4. Mudança aqui: Usamos <a> em vez de <Link> e adicionamos a classe do Lemon */}
+              <a 
+                href={plan.checkoutUrl}
+                className="lemonsqueezy-button"
                 style={{
                   display: 'block',
                   textAlign: 'center',
@@ -150,16 +161,13 @@ export default function PricingSection() {
                   fontSize: '1rem',
                   transition: 'opacity 0.2s'
                 }}
-                onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
-                onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
               >
                 {plan.buttonText}
-              </Link>
+              </a>
             </div>
           ))}
         </div>
 
-        {/* Trust Badge */}
         <div style={{ marginTop: '60px', textAlign: 'center' }}>
           <p style={{ color: '#64748b', fontSize: '0.9rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
             Secure checkout powered by Lemon Squeezy 🍋
