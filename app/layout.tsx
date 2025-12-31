@@ -1,6 +1,5 @@
 import { ClerkProvider } from "@clerk/nextjs";
 import "./globals.css";
-// 1. Primeiro, importamos o componente de Script do Next.js
 import Script from "next/script";
 
 export default function RootLayout({
@@ -11,13 +10,24 @@ export default function RootLayout({
   return (
     <ClerkProvider>
       <html lang="pt">
+        <head>
+          {/* Script de Configuração de Afiliados Lemon Squeezy */}
+          <Script id="lemon-affiliate-config" strategy="afterInteractive">
+            {`window.lemonSqueezyAffiliateConfig = { store: "nedra" };`}
+          </Script>
+          <Script 
+            src="https://lmsqueezy.com/affiliate.js" 
+            strategy="afterInteractive" 
+            defer 
+          />
+        </head>
         <body style={{ backgroundColor: '#020617', color: 'white', margin: 0, fontFamily: 'sans-serif' }}>
           {children}
 
-          {/* 2. Colocamos o script aqui, antes de fechar o body */}
+          {/* Script do Checkout Lemon Squeezy Overlay */}
           <Script
             src="https://app.lemonsqueezy.com/js/lemon.js"
-            strategy="afterInteractive" 
+            strategy="afterInteractive"
           />
         </body>
       </html>

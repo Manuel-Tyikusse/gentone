@@ -18,12 +18,23 @@ export default function Footer() {
             Transforming your ideas into professional video scripts in seconds with AI power.
           </p>
           <div className={styles.socialIcons}>
-            <li><Link href="/affiliates" className={styles.link}>Help Center</Link></li>
             <a href="https://instagram.com/gentoneai" className={styles.socialLink} target="_blank" rel="noopener noreferrer"><Instagram size={20} /></a>
             <a href="https://facebook.com/profile.php?id=61585573574868" className={styles.socialLink} target="_blank" rel="noopener noreferrer"><Facebook size={20} /></a>
             <a href="https://x.com/ToneGen57927" className={styles.socialLink} target="_blank" rel="noopener noreferrer"><Twitter size={20} /></a>
             <a href="https://wa.me/244933269713" className={styles.socialLink} target="_blank" rel="noopener noreferrer"><MessageCircle size={20} /></a>
           </div>
+        </div>
+
+        {/* Partners Link - NOVO */}
+        <div>
+          <h4 className={styles.columnTitle}>Partners</h4>
+          <ul className={styles.linkList}>
+            <li>
+              <Link href="/affiliates" className={styles.link} style={{ color: '#60a5fa', fontWeight: 'bold' }}>
+                Affiliate Program
+              </Link>
+            </li>
+          </ul>
         </div>
 
         {/* Support Links */}
@@ -48,7 +59,7 @@ export default function Footer() {
       </div>
 
       <div className={styles.bottomBar}>
-        <p>© 2025 GenTone. All rights reserved. Built for creators.</p>
+        <p>© 2026 GenTone. All rights reserved. Built for creators.</p>
       </div>
     </footer>
   );

@@ -4,6 +4,8 @@ import Link from "next/link";
 import { Zap, DollarSign, Users, BarChart3, ArrowRight, Globe, ShieldCheck } from "lucide-react";
 
 export default function AffiliatesPage() {
+  const signupLink = "https://nedra.lemonsqueezy.com/affiliates";
+
   return (
     <div style={{ minHeight: '100vh', background: '#020617', color: 'white', fontFamily: 'sans-serif' }}>
       
@@ -27,7 +29,8 @@ export default function AffiliatesPage() {
           Promote the next generation of AI scriptwriting. Get recurring commissions for every creator you bring to our platform.
         </p>
         <Link 
-          href="YOUR_LEMON_SQUEEZY_AFFILIATE_LINK" 
+          href={signupLink}
+          target="_blank"
           style={{ 
             background: '#2563eb', color: 'white', padding: '20px 40px', borderRadius: '12px', 
             fontSize: '1.1rem', fontWeight: 'bold', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '10px',
@@ -98,7 +101,7 @@ export default function AffiliatesPage() {
       <footer style={{ padding: '100px 20px', textAlign: 'center', borderTop: '1px solid #1e293b', background: 'linear-gradient(to bottom, #020617, #0f172a)' }}>
         <h2 style={{ fontSize: '2rem', marginBottom: '20px' }}>Ready to grow with GenTone?</h2>
         <p style={{ color: '#94a3b8', marginBottom: '30px' }}>Start earning from the first day.</p>
-        <Link href="YOUR_LEMON_SQUEEZY_AFFILIATE_LINK" style={{ color: '#3b82f6', fontWeight: 'bold', textDecoration: 'none', fontSize: '1.3rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+        <Link href={signupLink} target="_blank" style={{ color: '#3b82f6', fontWeight: 'bold', textDecoration: 'none', fontSize: '1.3rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
           Become an Affiliate today <Zap size={20} fill="#3b82f6" />
         </Link>
       </footer>
