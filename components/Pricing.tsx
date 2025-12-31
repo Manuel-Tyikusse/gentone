@@ -53,7 +53,6 @@ export default function PricingSection() {
       description: "Perfect for trying out GenTone and creating your first scripts.",
       features: ["15 AI-Generated Scripts", "All Tones Included", "Multi-language Support", "Life-time Access"],
       buttonText: "Get Started",
-      // 3. Inseri o teu link real do Starter
       checkoutUrl: "https://nedra.lemonsqueezy.com/checkout/buy/335fdcc3-79e1-4d3e-9551-186d4c7b64c3?embed=1", 
       popular: false
     },
@@ -65,7 +64,6 @@ export default function PricingSection() {
       description: "Our most popular plan for consistent content creators.",
       features: ["60 AI-Generated Scripts", "Priority AI Processing", "Advanced Tone Settings", "Commercial License", "24/7 Support"],
       buttonText: "Buy Pro Now",
-      // 3. Inseri o teu link real do Pro
       checkoutUrl: "https://nedra.lemonsqueezy.com/checkout/buy/a089f67e-edbc-4cb5-8c4c-c2c71128032c?embed=1",
       popular: true
     },
@@ -77,7 +75,6 @@ export default function PricingSection() {
       description: "Best value for agencies and professional YouTubers.",
       features: ["200 AI-Generated Scripts", "Early Access to New Features", "Highest Quality AI Model", "Dedicated Manager", "Unlimited History"],
       buttonText: "Go Elite",
-      // 3. Inseri o teu link real do Elite
       checkoutUrl: "https://nedra.lemonsqueezy.com/checkout/buy/854fc472-42c3-4eb7-acf0-5ed1a55f3366?embed=1",
       popular: false
     }

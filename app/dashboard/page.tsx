@@ -441,7 +441,7 @@
 import { useState, useEffect } from "react";
 import { UserButton, useUser } from "@clerk/nextjs";
 import { getUserProfile, generateScriptAction } from "@/app/actions/script-actions";
-import { Loader2, Sparkles, AlertCircle, History, Zap } from "lucide-react"; 
+import { Loader2, Sparkles, AlertCircle, History, Zap, Menu, X } from "lucide-react"; 
 import ReactMarkdown from 'react-markdown';
 import Link from "next/link";
 import CopyButton from "@/components/CopyButton";
@@ -452,6 +452,7 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(false);
   const [script, setScript] = useState("");
   const [statusMessage, setStatusMessage] = useState("");
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Para mobile menu
 
   useEffect(() => {
     async function loadData() {
@@ -465,16 +466,13 @@ export default function DashboardPage() {
 
   async function handleGenerate(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    
     if (credits !== null && credits <= 0) {
       setStatusMessage("You have no credits left. Please upgrade your plan.");
       return;
     }
-
     setLoading(true);
     setScript("");
     setStatusMessage("Connecting to GenTone AI...");
-
     const formData = new FormData(e.currentTarget);
     const data = {
       topic: formData.get("topic") as string,
@@ -482,7 +480,6 @@ export default function DashboardPage() {
       duration: formData.get("duration") as string,
       targetAudience: formData.get("targetAudience") as string
     };
-
     try {
       const res = await generateScriptAction(data);
       if (res.success && res.content) {
@@ -501,17 +498,24 @@ export default function DashboardPage() {
   }
 
   if (!isLoaded) return <div style={{padding: '40px', color: 'white'}}>Loading GenTone...</div>;
-
   const hasNoCredits = credits !== null && credits <= 0;
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: '#020617', color: 'white', fontFamily: 'sans-serif' }}>
+    <div className="dashboard-container">
       
+      {/* Mobile Header (Apenas visível em telemóveis) */}
+      <div className="mobile-header">
+        <h2 style={{ color: '#3b82f6', fontSize: '1.2rem', fontWeight: 'bold', margin: 0 }}>GenTone</h2>
+        <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} style={{ background: 'none', border: 'none', color: 'white' }}>
+          {isSidebarOpen ? <X size={24} /> : <Menu size={24} />}
+        </button>
+      </div>
+
       {/* Sidebar */}
-      <aside style={{ width: '280px', borderRight: '1px solid #1e293b', padding: '30px', display: 'flex', flexDirection: 'column', gap: '25px' }}>
-        <h2 style={{ color: '#3b82f6', fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '10px' }}>GenTone</h2>
+      <aside className={`sidebar ${isSidebarOpen ? 'open' : ''}`}>
+        <h2 className="sidebar-logo">GenTone</h2>
         
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '10px' }}>
           <UserButton afterSignOutUrl="/" />
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             <span style={{ fontSize: '0.85rem', color: '#f1f5f9', fontWeight: 'bold' }}>{user?.firstName || "Creator"}</span>
@@ -521,7 +525,7 @@ export default function DashboardPage() {
 
         <nav style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
           <div style={{ padding: '15px', background: 'rgba(59, 130, 246, 0.1)', borderRadius: '12px', border: '1px solid rgba(59, 130, 246, 0.2)' }}>
-            <p style={{ fontSize: '0.65rem', color: '#60a5fa', textTransform: 'uppercase', fontWeight: 'bold', letterSpacing: '0.05em' }}>Available Credits</p>
+            <p style={{ fontSize: '0.65rem', color: '#60a5fa', textTransform: 'uppercase', fontWeight: 'bold', letterSpacing: '0.05em', margin: 0 }}>Available Credits</p>
             <p style={{ fontSize: '1.6rem', fontWeight: 'bold', color: 'white', margin: '4px 0' }}>{credits ?? '0'}</p>
             
             <Link href="/dashboard/pricing" style={{ 
@@ -535,122 +539,88 @@ export default function DashboardPage() {
 
           <Link href="/dashboard/history" style={{ 
             display: 'flex', alignItems: 'center', gap: '10px', color: '#e2e8f0', textDecoration: 'none',
-            padding: '12px', borderRadius: '10px', background: '#0f172a', fontSize: '0.9rem', transition: '0.2s', border: '1px solid #1e293b'
+            padding: '12px', borderRadius: '10px', background: '#0f172a', fontSize: '0.9rem', border: '1px solid #1e293b'
           }}>
-            <History size={18} color="#60a5fa" />
-            History
+            <History size={18} color="#60a5fa" /> History
           </Link>
         </nav>
       </aside>
 
       {/* Main Content */}
-      <main style={{ flex: 1, padding: '50px', overflowY: 'auto' }}>
+      <main className="main-content">
         <div style={{ maxWidth: '800px', margin: '0 auto' }}>
           
-          <div style={{ marginBottom: '40px' }}>
-            <h1 style={{ fontSize: '2.2rem', fontWeight: 'bold', marginBottom: '8px' }}>
+          <div className="welcome-section">
+            <h1 style={{ fontSize: 'clamp(1.5rem, 5vw, 2.2rem)', fontWeight: 'bold', marginBottom: '8px' }}>
               Welcome, {user?.firstName || "Creator"}! 👋
             </h1>
-            <p style={{ color: '#94a3b8', fontSize: '1.1rem' }}>
+            <p style={{ color: '#94a3b8', fontSize: 'clamp(0.9rem, 3vw, 1.1rem)' }}>
               What kind of magic are we scripting today?
             </p>
           </div>
           
-          <form onSubmit={handleGenerate} style={{ background: '#0f172a', padding: '30px', borderRadius: '16px', border: '1px solid #1e293b' }}>
-            <h2 style={{marginBottom: '20px', fontSize: '1.2rem', color: '#f1f5f9'}}>Script Configuration</h2>
+          <form onSubmit={handleGenerate} className="glass-form">
+            <h2 style={{marginBottom: '20px', fontSize: '1.1rem', color: '#f1f5f9'}}>Script Configuration</h2>
             
-            <div style={{ marginBottom: '15px' }}>
-              <label style={{ fontSize: '0.8rem', color: '#64748b', display: 'block', marginBottom: '5px' }}>Video Topic</label>
-              <input name="topic" required placeholder="Ex: 5 healthy habits for morning routines" style={{ width: '100%', padding: '12px', borderRadius: '8px', background: '#020617', border: '1px solid #334155', color: 'white' }} />
+            <div className="input-group">
+              <label>Video Topic</label>
+              <input name="topic" required placeholder="Ex: 5 healthy habits for morning routines" />
             </div>
 
-            <div style={{ marginBottom: '15px' }}>
-              <label style={{ fontSize: '0.8rem', color: '#64748b', display: 'block', marginBottom: '5px' }}>Target Audience</label>
-              <input name="targetAudience" required placeholder="Ex: Busy professionals, Tech lovers..." style={{ width: '100%', padding: '12px', borderRadius: '8px', background: '#020617', border: '1px solid #334155', color: 'white' }} />
+            <div className="input-group">
+              <label>Target Audience</label>
+              <input name="targetAudience" required placeholder="Ex: Busy professionals..." />
             </div>
             
-            <div style={{ marginBottom: '15px' }}>
-              <label style={{ fontSize: '0.8rem', color: '#64748b', display: 'block', marginBottom: '5px' }}>Tone of Voice</label>
-              <select 
-                name="tone" 
-                style={{ 
-                  width: '100%', 
-                  padding: '12px', 
-                  borderRadius: '8px', 
-                  background: '#020617', 
-                  color: 'white', 
-                  border: '1px solid #334155',
-                  cursor: 'pointer'
-                }}
-              >
+            <div className="input-group">
+              <label>Tone of Voice</label>
+              <select name="tone">
                 <optgroup label="Standard" style={{ background: '#0f172a' }}>
-                  <option value="Professional">👔 Professional & Formal</option>
-                  <option value="Conversational">💬 Conversational (Friendly)</option>
-                  <option value="Informative">💡 Clear & Informative</option>
+                  <option value="Professional">👔 Professional</option>
+                  <option value="Conversational">💬 Conversational</option>
+                  <option value="Informative">💡 Informative</option>
                 </optgroup>
-                <optgroup label="Engagement & Hype" style={{ background: '#0f172a' }}>
-                  <option value="High Energy">🔥 High Energy / Hype</option>
-                  <option value="Motivational">🚀 Motivational & Inspiring</option>
-                  <option value="Persuasive">🎯 Sales & Persuasive (VSL)</option>
-                  <option value="Urgent">🚨 Urgent / Breaking News</option>
-                </optgroup>
-                <optgroup label="Entertainment" style={{ background: '#0f172a' }}>
-                  <option value="Funny">😂 Funny & Humorous</option>
-                  <option value="Storytelling">📖 Narrative Storytelling</option>
-                  <option value="Dramatic">🎭 Intense & Dramatic</option>
-                  <option value="Suspenseful">🕵️‍♂️ Mystery & Suspense</option>
-                  <option value="Sarcastic">😏 Sarcastic & Witty</option>
-                </optgroup>
-                <optgroup label="Premium & Niche" style={{ background: '#0f172a' }}>
-                  <option value="Luxury">💎 Elegant & Luxury</option>
-                  <option value="Minimalist">☁️ Clean & Minimalist</option>
-                  <option value="Educational">🎓 Academic & Deep Dive</option>
-                  <option value="Direct">⚡ Direct & No-Nonsense</option>
+                <optgroup label="Engagement" style={{ background: '#0f172a' }}>
+                  <option value="High Energy">🔥 High Energy</option>
+                  <option value="Motivational">🚀 Motivational</option>
+                  <option value="Persuasive">🎯 Sales (VSL)</option>
                 </optgroup>
               </select>
             </div>
 
-            <div style={{ marginBottom: '25px' }}>
-              <label style={{ fontSize: '0.8rem', color: '#64748b', display: 'block', marginBottom: '5px' }}>Duration</label>
-              <select name="duration" style={{ width: '100%', padding: '12px', borderRadius: '8px', background: '#020617', color: 'white', border: '1px solid #334155' }}>
+            <div className="input-group" style={{ marginBottom: '25px' }}>
+              <label>Duration</label>
+              <select name="duration">
                 <option value="30 seconds">📱 30 seconds</option>
                 <option value="60 seconds">🎥 60 seconds</option>
-                <option value="2 minutes">🎥 2 minutes</option>
                 <option value="5 minutes">🎥 5 minutes</option>
-                <option value="10 minutes">🎥 10 minutes</option>
               </select>
             </div>
 
             <button 
               type="submit" 
               disabled={loading || hasNoCredits} 
-              style={{ 
-                width: '100%', padding: '16px', background: hasNoCredits ? '#1e293b' : '#2563eb', 
-                color: 'white', borderRadius: '8px', border: 'none', 
-                cursor: hasNoCredits ? 'not-allowed' : 'pointer', fontWeight: 'bold', 
-                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' 
-              }}
+              className="generate-btn"
+              style={{ background: hasNoCredits ? '#1e293b' : '#2563eb', cursor: hasNoCredits ? 'not-allowed' : 'pointer' }}
             >
-              {loading ? <Loader2 style={{ animation: 'spin 1s linear infinite' }} /> : hasNoCredits ? "No Credits Left" : <><Sparkles size={18}/> Generate Script</>}
+              {loading ? <Loader2 className="spin" /> : hasNoCredits ? "No Credits Left" : <><Sparkles size={18}/> Generate Script</>}
             </button>
           </form>
 
           {statusMessage && (
-            <div style={{ marginTop: '20px', padding: '15px', background: hasNoCredits ? 'rgba(239, 68, 68, 0.1)' : '#1e293b', borderRadius: '8px', color: hasNoCredits ? '#ef4444' : '#94a3b8', display: 'flex', alignItems: 'center', gap: '10px', border: hasNoCredits ? '1px solid rgba(239, 68, 68, 0.2)' : 'none' }}>
+            <div className={`status-box ${hasNoCredits ? 'error' : ''}`}>
               <AlertCircle size={18} /> {statusMessage}
               {hasNoCredits && <Link href="/dashboard/pricing" style={{ color: '#ef4444', fontWeight: 'bold', marginLeft: 'auto' }}>Get Credits</Link>}
             </div>
           )}
 
-          {/* SCRIPT AREA */}
           {script && (
-            <div style={{ marginTop: '40px', background: '#0f172a', padding: '30px', borderRadius: '16px', border: '1px solid #3b82f6', lineHeight: '1.6' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                <h3 style={{ color: '#60a5fa', fontWeight: 'bold', margin: 0 }}>✨ Generated Script:</h3>
+            <div className="script-result">
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '10px' }}>
+                <h3 style={{ color: '#60a5fa', fontWeight: 'bold', margin: 0, fontSize: '1rem' }}>✨ Generated Script:</h3>
                 <CopyButton text={script} />
               </div>
-              
-              <div style={{ color: '#e2e8f0', background: '#020617', padding: '20px', borderRadius: '12px', border: '1px solid #1e293b' }}>
+              <div className="markdown-container">
                 <ReactMarkdown>{script}</ReactMarkdown>
               </div>
             </div>
@@ -658,8 +628,45 @@ export default function DashboardPage() {
         </div>
       </main>
 
+      {/* ESTILOS RESPONSIVOS */}
       <style dangerouslySetInnerHTML={{ __html: `
+        .dashboard-container { display: flex; min-height: 100vh; background: #020617; color: white; font-family: sans-serif; }
+        .sidebar { width: 280px; border-right: 1px solid #1e293b; padding: 30px; display: flex; flexDirection: column; gap: 25px; transition: 0.3s; background: #020617; z-index: 100; }
+        .sidebar-logo { color: #3b82f6; font-size: 1.5rem; font-weight: bold; margin-bottom: 10px; }
+        .main-content { flex: 1; padding: 40px; overflow-y: auto; width: 100%; }
+        .mobile-header { display: none; padding: 15px 20px; border-bottom: 1px solid #1e293b; align-items: center; justify-content: space-between; background: #0f172a; position: sticky; top: 0; z-index: 110; }
+        
+        .glass-form { background: #0f172a; padding: 30px; border-radius: 16px; border: 1px solid #1e293b; }
+        .input-group { margin-bottom: 15px; }
+        .input-group label { font-size: 0.8rem; color: #64748b; display: block; margin-bottom: 5px; }
+        .input-group input, .input-group select { width: 100%; padding: 12px; border-radius: 8px; background: #020617; border: 1px solid #334155; color: white; font-size: 16px; }
+        
+        .generate-btn { width: 100%; padding: 16px; color: white; border-radius: 8px; border: none; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.2s; }
+        .generate-btn:hover { opacity: 0.9; }
+        
+        .status-box { margin-top: 20px; padding: 15px; background: #1e293b; border-radius: 8px; color: #94a3b8; display: flex; align-items: center; gap: 10px; font-size: 0.9rem; }
+        .status-box.error { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); }
+        
+        .script-result { marginTop: 40px; background: #0f172a; padding: clamp(15px, 4vw, 30px); border-radius: 16px; border: 1px solid #3b82f6; }
+        .markdown-container { color: #e2e8f0; background: #020617; padding: 20px; border-radius: 12px; border: 1px solid #1e293b; overflow-x: auto; }
+        
+        .spin { animation: spin 1s linear infinite; }
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+        /* MEDIA QUERIES PARA MOBILE */
+        @media (max-width: 768px) {
+          .dashboard-container { flex-direction: column; }
+          .sidebar { 
+            position: fixed; left: -100%; top: 56px; height: calc(100vh - 56px); 
+            width: 100%; border: none; padding: 20px;
+          }
+          .sidebar.open { left: 0; }
+          .sidebar-logo { display: none; }
+          .mobile-header { display: flex; }
+          .main-content { padding: 20px; }
+          .welcome-section { margin-bottom: 30px; }
+          .glass-form { padding: 20px; }
+        }
       `}} />
     </div>
   );
