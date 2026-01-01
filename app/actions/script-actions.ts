@@ -46,19 +46,20 @@ export async function generateScriptAction(formData: {
     const profile = await db.collection("profiles").findOne({ userId: userId });
     if (!profile || profile.credits <= 0) return { success: false, error: "No credits." };
 
-    // GENTONE ENGINE V7 - THE "ANTI-INFANTILIZATION" SHIELD
+    // GENTONE ENGINE V8 - THE VIRAL RETENTION SYSTEM
     const systemInstruction = `
-      You are GenTone, an Elite Content Agency AI. You write for professional YouTubers and Influencers.
+      You are GenTone, an Expert in Short-Form Viral Content (TikTok, Reels, Shorts).
+      Your goal is to stop the scroll in 0.5 seconds.
+
+      TIKTOK VIRAL RULES:
+      1. THE HOOK: Start with a "Pattern Interrupt". Example: "Stop making coffee like this!" or "The 1% coffee secret". NEVER start with "Hello" or "Today we will".
+      2. VISUAL VELOCITY: Describe fast cuts [Quick Cut], [Zoom In], [Fast Motion], and [Text Overlays]. Something must change visually every 1.5 seconds.
+      3. NARRATION STYLE: High energy, punchy, and "no-fluff". Use short sentences. 
+      4. SHOW, DON'T TELL: Use cinematic B-Roll descriptions (e.g., [Macro shot of steam], [POV pouring]).
+      5. LANGUAGE: Write 100% in the language of the topic: "${formData.topic}". 
+      6. NO BORING TRANSITIONS: No "Next", no "Step 1". Use seamless transitions like "Now do this" or "Here is the trick".
       
-      STRICT ARCHITECTURE:
-      1. NO CHILDISH PERSONAS: Never use "Young Chefs", "Kids", "Magic", or "Dancing". 
-      2. NARRATOR: The narrator is an AUTHORITY, a Master of the Craft. Use a professional and sleek tone.
-      3. HIGH-SPEED RETENTION: No long intros. Start with a result or a professional hook.
-      4. VALUE-DRIVEN: Provide specific measurements (grams, temperature, seconds).
-      5. SAFETY: Never suggest children doing things alone. Frame it as a "Professional Guide".
-      6. LANGUAGE: Detect the topic language and respond 100% in that language (including tags).
-      
-      PROHIBITED WORDS: "Young chefs", "Smiling faces", "Magic", "Let's learn together", "Fun recipes".
+      CONTRAINTS: Avoid "manual-style" boring scripts. If it looks like a documentary, it failed. It must look like a viral TikTok.
     `;
 
     const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
@@ -70,16 +71,16 @@ export async function generateScriptAction(formData: {
           { role: "system", content: systemInstruction },
           { 
             role: "user", 
-            content: `Generate a HIGH-END script for ${formData.platform}.
+            content: `Create a VIRAL ${formData.platform} script. 
             Topic: "${formData.topic}"
-            Audience: ${formData.targetAudience}
+            Target Audience: ${formData.targetAudience}
             Tone: ${formData.tone}
             Duration: ${formData.duration}.
             
-            STRICT: Be professional. NO BABY TALK. Focus on expert tips and cinematic visuals.` 
+            STRICT: Use fast-paced TikTok editing style. Start with a killer hook. No boring intros.` 
           }
         ],
-        temperature: 0.2, // Lowest possible to force absolute obedience
+        temperature: 0.6, // Increased slightly to allow for more energetic and "viral" phrasing
         max_tokens: 3800,
       })
     });
