@@ -5,7 +5,7 @@ import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 
 export async function getUserProfile() {
-  const { userId } = await auth();
+  const { userId } = auth();
   if (!userId) return { success: false, error: "Not authenticated." };
   try {
     const client = await clientPromise;
@@ -28,7 +28,7 @@ export async function generateScriptAction(formData: {
   targetAudience: string,
   platform: string
 }) {
-  const { userId } = await auth();
+  const { userId } = auth();
   const GROQ_API_KEY = process.env.GROQ_API_KEY;
 
   if (!userId) return { success: false, error: "Session expired." };
@@ -39,28 +39,22 @@ export async function generateScriptAction(formData: {
     const profile = await db.collection("profiles").findOne({ userId: userId });
     if (!profile || profile.credits <= 0) return { success: false, error: "No credits." };
 
-    // GENTONE ENGINE V9 - THE "ELITE CREATOR" PROTOCOL
+    // GENTONE ENGINE V10 - THE GLOBAL MIRROR PROTOCOL
     const systemInstruction = `
-      [STRICT ROLE]: You are a High-End Social Media Strategist. You write for PROFESSIONAL ADULT INFLUENCERS.
+      [ROLE]: You are GenTone, a Senior Viral Strategist for professional creators.
       
-      [LANGUAGE RULE]: 
-      - The user topic is: "${formData.topic}". 
-      - You MUST write 100% of the output (Visuals, Audio, Titles, Tags) in the SAME language as the topic. 
-      - If the topic is Portuguese, NEVER use English words like "Quick Cut" or "Text Overlay" in the final output. Use "Corte Rápido" and "Texto na Tela".
+      [LANGUAGE MIRROR RULE]: 
+      1. IDENTIFY the language of the user's topic: "${formData.topic}".
+      2. You MUST write the ENTIRE script (Visuals, Audio, Timeframes, and Tags) in that EXACT language.
+      3. If the topic is in English, all tags must be [Visual] / [Audio].
+      4. If the topic is in Portuguese, all tags must be [Visual] / [Áudio].
+      5. NEVER translate the script to Portuguese if the user input is in English or another language.
 
       [CONTENT PROTOCOL]:
-      1. NARRATOR: The narrator is ALWAYS an expert adult (Creator/Influencer). 
-      2. TOPIC HANDLING: If the topic is about kids, the narrator is an ADULT teaching parents or showing a premium lifestyle. NEVER have a kid as the main narrator.
-      3. NO CHILDISH STUFF: BANNED: "sad face", "happy face", "magic", "aventura", "amiguinhos", "baby talk". 
-      4. VIRAL STRUCTURE: 
-         - 0s-3s: AGGRESSIVE HOOK. (e.g., "Pare de fazer isso!" or "O segredo profissional para...")
-         - Visuals: Change every 1.5 seconds.
-      5. TECHNICAL VALUE: Use real data (measurements, professional gear, elite techniques).
-
-      [OUTPUT FORMAT EXAMPLE (in the topic's language)]:
-      [00:00 - 00:03]
-      [Visual]: Descrição detalhada da cena.
-      [Áudio]: Fala exata do narrador.
+      - NARRATOR: Always an adult expert/influencer. NEVER a child.
+      - STYLE: High-retention, fast-paced (TikTok/Reels style). 
+      - NO CHILDISH CONTENT: Banned words: "magic", "aventura", "amiguinhos", "cooking with kids", "sad/happy faces".
+      - STRUCTURE: Aggressive hook in the first 3 seconds. Visual change every 2 seconds.
     `;
 
     const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
@@ -72,16 +66,16 @@ export async function generateScriptAction(formData: {
           { role: "system", content: systemInstruction },
           { 
             role: "user", 
-            content: `Gera um roteiro viral para ${formData.platform}. 
-            TEMA: "${formData.topic}"
-            PÚBLICO: ${formData.targetAudience}
-            TOM: ${formData.tone}
-            DURAÇÃO: ${formData.duration}.
+            content: `Generate a professional ${formData.platform} script.
+            TOPIC: "${formData.topic}"
+            AUDIENCE: ${formData.targetAudience}
+            TONE: ${formData.tone}
+            DURATION: ${formData.duration}.
             
-            REGRAS FINAIS: Escreve TUDO em Português. O narrador é um especialista adulto. O roteiro deve ser dinâmico e profissional. Sem falas infantis.` 
+            STRICT: Respond 100% in the language of the topic provided. Do not use Portuguese if the topic is in another language. Maintain an elite professional tone.` 
           }
         ],
-        temperature: 0.5, // Equilíbrio entre criatividade viral e obediência
+        temperature: 0.4,
         max_tokens: 3500,
       })
     });
@@ -98,6 +92,6 @@ export async function generateScriptAction(formData: {
     revalidatePath("/dashboard");
     return { success: true, content: content.trim() };
   } catch (error: any) {
-    return { success: false, error: "Falha na geração." };
+    return { success: false, error: "Generation failed." };
   }
 }
