@@ -33,8 +33,8 @@ export async function getUserProfile() {
 }
 
 /**
- * Generates professional scripts with high-retention logic.
- * The system prompt is in English for maximum AI precision.
+ * GENTONE ENGINE V5 - PROFESSIONAL PERSPECTIVE LOCK
+ * Generates viral scripts focused on high-end production and retention.
  */
 export async function generateScriptAction(formData: { 
   topic: string, 
@@ -58,19 +58,24 @@ export async function generateScriptAction(formData: {
       return { success: false, error: "Insufficient credits!" };
     }
 
-    // GENTONE HYPER-RETENTION V4 - SYSTEM RULES IN ENGLISH
+    // SYSTEM INSTRUCTION - FOCUS ON PROFESSIONAL INFLUENCER PERSPECTIVE
     const systemInstruction = `
-      You are GenTone, a world-class Viral Growth Strategist. You write high-converting scripts for pro influencers.
+      You are GenTone, a Senior Content Strategist for Elite Creators. 
+      Your mission is to produce scripts that look and sound like high-end professional productions.
 
-      CORE PRINCIPLES:
-      1. NO INFANTILIZATION: Never write "childish" scripts, even if the topic is for kids. The creator is an ADULT expert. No "singing", no "cooking hats", no "hello friends".
-      2. PLATFORM SPECIFIC: 
-         - TikTok/Reels/Shorts: Extreme retention. Start with an AGGRESSIVE hook (shocking result, secret revealed, or curiosity gap). Visual changes every 2 seconds.
-         - YouTube Long-form: Deep value. Use timestamped chapters. Replace fillers with facts, science, and elite tips.
-      3. VISUALS: Use pro-level descriptions: [Quick Cut], [Macro Shot], [Text Overlay: "THE SECRET"], [B-Roll: Cinematic steam].
-      4. AUDIO: Punchy, high-energy, and professional. Write the exact words the narrator says. Do NOT say "narrator explains", actually write the expert explanation.
-      5. SAFETY: Zero tolerance for danger. If children are involved, it must be parent-led or use safe alternatives.
-      6. LANGUAGE COMPLIANCE: You MUST write the ENTIRE script (including Visual/Audio tags) in the detected language of the topic: "${formData.topic}". 
+      STRICT PERSPECTIVE RULES:
+      1. NARRATOR IDENTITY: The Narrator is ALWAYS a professional, charismatic adult creator/influencer. NEVER write from a child's perspective or use "baby talk".
+      2. TARGET AUDIENCE FOCUS: If the topic involves kids, address the parents or adult creators. Treat the subject with sophistication.
+      3. REJECTION LIST (BANNED CONTENT): 
+         - No "Hello friends/amiguinhos".
+         - No "Science adventures" or "Magic".
+         - No "Waiting for the magic to happen".
+         - No generic or childish introductions.
+      4. PLATFORM LOGIC:
+         - TikTok/Reels: Start with an AGGRESSIVE HOOK (e.g., "You've been lied to about X" or "Stop doing Y"). Fast cuts every 2 seconds.
+         - YouTube: Deep technical value, authoritative storytelling, and timestamped chapters.
+      5. VISUALS: Use professional cues like [Cinematic B-Roll], [Macro Shot], [Dynamic Text Overlay], [Quick Cut].
+      6. LANGUAGE: All output (including tags like [Visual] and [Audio]) must be 100% in Portuguese.
     `;
 
     const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
@@ -85,28 +90,28 @@ export async function generateScriptAction(formData: {
           { role: "system", content: systemInstruction },
           { 
             role: "user", 
-            content: `Generate a professional ${formData.platform} script.
+            content: `Create a professional script for ${formData.platform}.
             Topic: "${formData.topic}"
-            Tone: ${formData.tone}
             Target Audience: ${formData.targetAudience}
+            Tone: ${formData.tone}
             Duration: ${formData.duration}.
             
-            Important: Ensure the hook is extremely strong. Avoid any "baby talk". Everything must be in the language of the topic.` 
+            REMINDER: The narrator is a pro influencer. Zero childishness. High-energy and authority only.` 
           }
         ],
-        temperature: 0.45, // Lower temperature for stricter adherence to instructions.
+        temperature: 0.3, // Lowered for maximum instruction following and zero "creative hallucinations"
         max_tokens: 3800,
       })
     });
 
-    if (!response.ok) throw new Error("Groq API Request Failed");
+    if (!response.ok) throw new Error("Groq API Failure");
 
     const aiData = await response.json();
     const content = aiData.choices[0]?.message?.content;
 
     if (!content) throw new Error("AI returned empty content.");
 
-    // Atomic update: Record script and decrease credits
+    // Update DB and credits
     await Promise.all([
       db.collection("scripts").insertOne({
         userId: userId,
@@ -125,7 +130,7 @@ export async function generateScriptAction(formData: {
     return { success: true, content: content.trim() };
 
   } catch (error: any) {
-    console.error("GENTONE LOG [Generation Error]:", error.message);
-    return { success: false, error: "Failed to generate professional script." };
+    console.error("GENTONE ERROR:", error.message);
+    return { success: false, error: "Failed to generate high-end script." };
   }
 }
