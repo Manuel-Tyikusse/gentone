@@ -4,9 +4,6 @@ import clientPromise from "@/lib/mongodb";
 import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 
-/**
- * Obtém ou cria o perfil do utilizador na coleção "profiles".
- */
 export async function getUserProfile() {
   const { userId } = await auth();
   if (!userId) return { success: false, error: "Not authenticated." };
@@ -32,9 +29,6 @@ export async function getUserProfile() {
   }
 }
 
-/**
- * Gera roteiros virais de alta retenção (Short-form content expert).
- */
 export async function generateScriptAction(formData: { 
   topic: string, 
   tone: string, 
@@ -56,22 +50,18 @@ export async function generateScriptAction(formData: {
       return { success: false, error: "Créditos insuficientes!" };
     }
 
-    // SYSTEM PROMPT: SHORT-FORM RETENTION ENGINE
+    // SYSTEM PROMPT: ADAPTIVE CONTENT ENGINE (Short & Long Form)
     const systemInstruction = `
-      You are GenTone, a Viral Growth Expert for TikTok, Reels, and Shorts. 
-      You don't write "stories" or "educational content"; you write "Retention Machines".
+      You are GenTone, a Senior Content Strategist for YouTube, TikTok, and Instagram.
+      You create high-quality scripts tailored to the user's specific duration and audience.
 
-      STRICT SCRIPTWRITING RULES:
-      1. REAL-WORLD TIMING: The entire script MUST be under 60 seconds. Each scene is 3-5s max.
-      2. THE "KILLER" HOOK: Start with a result, a shock, or a curiosity gap. No greetings. 
-      3. PROFESSIONAL CREATOR TONE: Write for a pro influencer. No "baby talk", no "childish voices", even for family topics. Use punchy, high-energy language.
-      4. VISUAL DYNAMICS: Use only home-studio friendly cues: [Quick Cut], [Text Overlay], [POV], [Point to screen].
-      5. FORMAT: 
-         Scene 1 (0-3s) - [Visual]: / [Audio]:
-         Scene 2 (3-10s) - [Visual]: / [Audio]: 
-         (Continue with precise timing up to the requested duration).
-      6. SAFETY: Absolute zero tolerance for dangerous acts (e.g., kids near boiling water).
-      7. LANGUAGE: Write 100% in the language of the topic: "${formData.topic}".
+      CORE ARCHITECTURE:
+      1. DURATION COMPLIANCE: If the duration is long (e.g., 5-10 min), structure the script with "Chapters" and "Acts". If short (under 60s), focus on "High-Speed Retention".
+      2. TONE ALIGNMENT: Use a professional, expert-level tone tailored to "${formData.tone}". Never be "childish" unless the audience is specifically young children, but even then, maintain professional production values.
+      3. VISUAL DICTIONARY: Use [Visual] for cinematography/action and [Audio] for speech. Include [B-Roll], [Graphic Overlay], and [Sound Effect] cues.
+      4. SCRIPT QUALITY: Avoid repetitive scenes. Ensure the narrative flows logically from Hook -> Content -> Call to Action.
+      5. LANGUAGE: Write 100% in the language of the topic: "${formData.topic}".
+      6. NO RESTRICTIONS: Do not lecture the user about duration limits. Just fulfill the requested time: ${formData.duration}.
     `;
 
     const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
@@ -86,22 +76,28 @@ export async function generateScriptAction(formData: {
           { role: "system", content: systemInstruction },
           { 
             role: "user", 
-            content: `Topic: "${formData.topic}". Tone: ${formData.tone}. Audience: ${formData.targetAudience}. Duration: ${formData.duration}.` 
+            content: `Create a full, detailed script.
+            TOPIC: "${formData.topic}"
+            AUDIENCE: ${formData.targetAudience}
+            TONE: ${formData.tone}
+            REQUESTED DURATION: ${formData.duration}` 
           }
         ],
-        temperature: 0.6, // Foco total na estrutura e regras
-        max_tokens: 1200,
+        temperature: 0.7, // Um pouco mais de "espaço" para scripts longos e criativos
+        max_tokens: 3000, // Aumentado para suportar scripts de 5-10 minutos
       })
     });
 
-    if (!response.ok) throw new Error("Groq API Failure");
+    if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error?.message || "Groq API Failure");
+    }
 
     const aiData = await response.json();
     const content = aiData.choices[0]?.message?.content;
 
     if (!content) throw new Error("AI returned empty content.");
 
-    // Gravar histórico e descontar crédito
     await Promise.all([
       db.collection("scripts").insertOne({
         userId: userId,
@@ -121,6 +117,6 @@ export async function generateScriptAction(formData: {
 
   } catch (error: any) {
     console.error("LOG GENTONE Error:", error.message);
-    return { success: false, error: "Falha ao gerar roteiro profissional." };
+    return { success: false, error: "Falha ao gerar roteiro. Tenta novamente." };
   }
 }
