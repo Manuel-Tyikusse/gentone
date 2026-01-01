@@ -19,13 +19,10 @@ export async function getUserProfile() {
       { upsert: true, returnDocument: 'after' }
     );
 
-    return { 
-      success: true, 
-      credits: profile ? profile.credits : 10 
-    };
+    return { success: true, credits: profile ? profile.credits : 10 };
   } catch (error: any) {
-    console.error("GENTONE LOG [MongoDB Error]:", error.message);
-    return { success: false, error: "Database connection failed." };
+    console.error("GENTONE LOG:", error.message);
+    return { success: false, error: "Database error." };
   }
 }
 
@@ -40,55 +37,49 @@ export async function generateScriptAction(formData: {
   const GROQ_API_KEY = process.env.GROQ_API_KEY;
 
   if (!userId) return { success: false, error: "Session expired." };
-  if (!GROQ_API_KEY) return { success: false, error: "AI API Key missing." };
+  if (!GROQ_API_KEY) return { success: false, error: "API Key missing." };
 
   try {
     const client = await clientPromise;
     const db = client.db("gentone");
 
     const profile = await db.collection("profiles").findOne({ userId: userId });
-    if (!profile || profile.credits <= 0) {
-      return { success: false, error: "Insufficient credits!" };
-    }
+    if (!profile || profile.credits <= 0) return { success: false, error: "No credits." };
 
-    // GENTONE ENGINE V6 - MULTILINGUAL ADAPTIVE SYSTEM
+    // GENTONE ENGINE V7 - THE "ANTI-INFANTILIZATION" SHIELD
     const systemInstruction = `
-      You are GenTone, a high-end Scriptwriting AI for professional Content Creators.
+      You are GenTone, an Elite Content Agency AI. You write for professional YouTubers and Influencers.
       
-      LANGUAGE PROTOCOL (CRITICAL):
-      1. Detect the language of the User Topic.
-      2. Write the ENTIRE response (Script, Visual tags, Audio tags, and Headlines) in that SAME language.
-      3. If the topic is in English, write in English. If in Portuguese, write in Portuguese. If in Spanish, write in Spanish, etc.
+      STRICT ARCHITECTURE:
+      1. NO CHILDISH PERSONAS: Never use "Young Chefs", "Kids", "Magic", or "Dancing". 
+      2. NARRATOR: The narrator is an AUTHORITY, a Master of the Craft. Use a professional and sleek tone.
+      3. HIGH-SPEED RETENTION: No long intros. Start with a result or a professional hook.
+      4. VALUE-DRIVEN: Provide specific measurements (grams, temperature, seconds).
+      5. SAFETY: Never suggest children doing things alone. Frame it as a "Professional Guide".
+      6. LANGUAGE: Detect the topic language and respond 100% in that language (including tags).
       
-      CONTENT QUALITY:
-      - NARRATOR: Always a professional, high-authority adult influencer. 
-      - ANTI-CHILDISH: No "hello friends", no "magic", no childish tones. Even for kids' topics, be a professional educator/expert.
-      - PLATFORM RULES: ${formData.platform} style. Fast hooks for TikTok/Reels, deep value for YouTube.
-      - FORMAT: [Visual]: Detailed scene description. [Audio]: Exact spoken words.
+      PROHIBITED WORDS: "Young chefs", "Smiling faces", "Magic", "Let's learn together", "Fun recipes".
     `;
 
     const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
-      headers: { 
-        "Authorization": `Bearer ${GROQ_API_KEY}`, 
-        "Content-Type": "application/json" 
-      },
+      headers: { "Authorization": `Bearer ${GROQ_API_KEY}`, "Content-Type": "application/json" },
       body: JSON.stringify({
         model: "llama-3.3-70b-versatile",
         messages: [
           { role: "system", content: systemInstruction },
           { 
             role: "user", 
-            content: `TASK: Generate a pro script for ${formData.platform}.
-            TOPIC: "${formData.topic}"
-            AUDIENCE: ${formData.targetAudience}
-            TONE: ${formData.tone}
-            DURATION: ${formData.duration}.
+            content: `Generate a HIGH-END script for ${formData.platform}.
+            Topic: "${formData.topic}"
+            Audience: ${formData.targetAudience}
+            Tone: ${formData.tone}
+            Duration: ${formData.duration}.
             
-            REMINDER: Write everything in the language used in the TOPIC. Be professional and authoritative.` 
+            STRICT: Be professional. NO BABY TALK. Focus on expert tips and cinematic visuals.` 
           }
         ],
-        temperature: 0.4,
+        temperature: 0.2, // Lowest possible to force absolute obedience
         max_tokens: 3800,
       })
     });
@@ -98,27 +89,14 @@ export async function generateScriptAction(formData: {
     const aiData = await response.json();
     const content = aiData.choices[0]?.message?.content;
 
-    if (!content) throw new Error("AI returned empty content.");
-
     await Promise.all([
-      db.collection("scripts").insertOne({
-        userId: userId,
-        title: formData.topic,
-        content: content.trim(),
-        createdAt: new Date(),
-        metadata: formData
-      }),
-      db.collection("profiles").updateOne(
-        { userId: userId },
-        { $inc: { credits: -1 } }
-      )
+      db.collection("scripts").insertOne({ userId, title: formData.topic, content: content.trim(), createdAt: new Date(), metadata: formData }),
+      db.collection("profiles").updateOne({ userId }, { $inc: { credits: -1 } })
     ]);
 
     revalidatePath("/dashboard");
     return { success: true, content: content.trim() };
-
   } catch (error: any) {
-    console.error("GENTONE ERROR:", error.message);
-    return { success: false, error: "Failed to generate script." };
+    return { success: false, error: "Generation failed." };
   }
 }
