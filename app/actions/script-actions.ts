@@ -47,25 +47,24 @@ export async function generateScriptAction(formData: {
 
     const profile = await db.collection("profiles").findOne({ userId: userId });
     if (!profile || profile.credits <= 0) {
-      return { success: false, error: "Insufficient credits. Please upgrade." };
+      return { success: false, error: "Créditos insuficientes. Faz upgrade para continuar!" };
     }
 
-    // SYSTEM PROMPT REESTRUTURADO: Estilo Roteiro de Produção (Cinematográfico)
+    // PROMPT DE ALTA RETENÇÃO (Focado em TikTok, Reels e Shorts)
     const systemInstruction = `
-      You are a world-class Cinematographer and Scriptwriter. 
-      Your task is to write a PROFESSIONAL VIDEO SCRIPT.
+      You are GenTone, the world's #1 Scriptwriter for short-form viral content (TikTok, Reels, Shorts).
+      Your goal is to create scripts that are easy to film at home but impossible to stop watching.
 
-      STRICT COMMANDS:
-      1. NO FAKE IMAGES: Never use tags like "[Image of...]" or "[Infographic...]".
-      2. FORMAT: Use only [Scene: Description], [Cut to: Description], and "Narrator:".
-      3. CINEMATIC STYLE: Describe the lighting, camera movement, and environment inside the [Scene] tags.
-      4. NARRATION: Write the dialogue in a smooth, professional, and immersive way, just like a luxury brand commercial.
-      5. LANGUAGE: Write 100% in the language of the topic: "${formData.topic}".
-      6. TONE: Strictly adhere to the ${formData.tone} tone.
-      
-      STRUCTURE EXAMPLE:
-      [Scene: A dark office, only lit by the glow of a computer screen. Slow zoom into the user's tired eyes.]
-      Narrator (Sophisticated): "Success isn't about working harder. It's about working where it matters."
+      STRICT RULES:
+      1. THE HOOK (0-3s): Start with a "Pattern Interrupt". No greetings. Use a shocking fact, a direct benefit, or a specific problem.
+      2. VISUALS: Suggest only realistic actions for a creator with a phone (e.g., [Pointing at text], [Looking at camera], [Showing screen], [Fast transition]). 
+      3. AUDIO/SPEECH: Write exactly how people talk. Short, punchy, and conversational.
+      4. LANGUAGE: You MUST write 100% in the language of the topic: "${formData.topic}".
+      5. FORMAT: 
+         [Visual]: Description of what happens on screen.
+         [Audio]: The exact words to be spoken.
+      6. TONE: Strictly follow the ${formData.tone} tone.
+      7. NO META-TALK: Start the script directly.
     `;
 
     const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
@@ -80,31 +79,38 @@ export async function generateScriptAction(formData: {
           { role: "system", content: systemInstruction },
           { 
             role: "user", 
-            content: `Create a professional cinematic video script. 
-            TOPIC: "${formData.topic}"
-            AUDIENCE: ${formData.targetAudience}
-            DURATION: ${formData.duration}` 
+            content: `Write a viral script about: "${formData.topic}". 
+            Target Audience: ${formData.targetAudience}. 
+            Duration: ${formData.duration}.` 
           }
         ],
-        temperature: 0.65, // Menos "aleatoriedade" para seguir o formato à risca
-        max_tokens: 2000,
+        temperature: 0.75, // Equilíbrio perfeito entre criatividade e estrutura
+        max_tokens: 1500,
       })
     });
 
-    if (!response.ok) throw new Error("Groq API Failure");
+    if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error?.message || "Groq API Failure");
+    }
 
     const aiData = await response.json();
     const content = aiData.choices[0]?.message?.content;
 
     if (!content) throw new Error("AI returned empty content.");
 
+    // Gravar e descontar crédito
     await Promise.all([
       db.collection("scripts").insertOne({
         userId: userId,
         title: formData.topic,
         content: content.trim(),
         createdAt: new Date(),
-        metadata: formData
+        metadata: { 
+            tone: formData.tone, 
+            duration: formData.duration,
+            targetAudience: formData.targetAudience 
+        }
       }),
       db.collection("profiles").updateOne(
         { userId: userId },
@@ -116,7 +122,7 @@ export async function generateScriptAction(formData: {
     return { success: true, content: content.trim() };
 
   } catch (error: any) {
-    console.error("LOG GENTONE Error:", error.message);
-    return { success: false, error: "Failed to generate script." };
+    console.error("LOG GENTONE [Generation Error]:", error.message);
+    return { success: false, error: "Falha ao gerar o roteiro. Tenta novamente." };
   }
 }
