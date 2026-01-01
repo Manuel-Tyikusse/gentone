@@ -7,21 +7,16 @@ import { revalidatePath } from "next/cache";
 export async function getUserProfile() {
   const { userId } = await auth();
   if (!userId) return { success: false, error: "Not authenticated." };
-
   try {
     const client = await clientPromise;
     const db = client.db("gentone");
-    const collection = db.collection("profiles");
-
-    const profile = await collection.findOneAndUpdate(
+    const profile = await db.collection("profiles").findOneAndUpdate(
       { userId: userId },
       { $setOnInsert: { userId: userId, credits: 10, createdAt: new Date() } },
       { upsert: true, returnDocument: 'after' }
     );
-
     return { success: true, credits: profile ? profile.credits : 10 };
   } catch (error: any) {
-    console.error("GENTONE LOG:", error.message);
     return { success: false, error: "Database error." };
   }
 }
@@ -37,29 +32,35 @@ export async function generateScriptAction(formData: {
   const GROQ_API_KEY = process.env.GROQ_API_KEY;
 
   if (!userId) return { success: false, error: "Session expired." };
-  if (!GROQ_API_KEY) return { success: false, error: "API Key missing." };
 
   try {
     const client = await clientPromise;
     const db = client.db("gentone");
-
     const profile = await db.collection("profiles").findOne({ userId: userId });
     if (!profile || profile.credits <= 0) return { success: false, error: "No credits." };
 
-    // GENTONE ENGINE V8 - THE VIRAL RETENTION SYSTEM
+    // GENTONE ENGINE V9 - THE "ELITE CREATOR" PROTOCOL
     const systemInstruction = `
-      You are GenTone, an Expert in Short-Form Viral Content (TikTok, Reels, Shorts).
-      Your goal is to stop the scroll in 0.5 seconds.
-
-      TIKTOK VIRAL RULES:
-      1. THE HOOK: Start with a "Pattern Interrupt". Example: "Stop making coffee like this!" or "The 1% coffee secret". NEVER start with "Hello" or "Today we will".
-      2. VISUAL VELOCITY: Describe fast cuts [Quick Cut], [Zoom In], [Fast Motion], and [Text Overlays]. Something must change visually every 1.5 seconds.
-      3. NARRATION STYLE: High energy, punchy, and "no-fluff". Use short sentences. 
-      4. SHOW, DON'T TELL: Use cinematic B-Roll descriptions (e.g., [Macro shot of steam], [POV pouring]).
-      5. LANGUAGE: Write 100% in the language of the topic: "${formData.topic}". 
-      6. NO BORING TRANSITIONS: No "Next", no "Step 1". Use seamless transitions like "Now do this" or "Here is the trick".
+      [STRICT ROLE]: You are a High-End Social Media Strategist. You write for PROFESSIONAL ADULT INFLUENCERS.
       
-      CONTRAINTS: Avoid "manual-style" boring scripts. If it looks like a documentary, it failed. It must look like a viral TikTok.
+      [LANGUAGE RULE]: 
+      - The user topic is: "${formData.topic}". 
+      - You MUST write 100% of the output (Visuals, Audio, Titles, Tags) in the SAME language as the topic. 
+      - If the topic is Portuguese, NEVER use English words like "Quick Cut" or "Text Overlay" in the final output. Use "Corte Rápido" and "Texto na Tela".
+
+      [CONTENT PROTOCOL]:
+      1. NARRATOR: The narrator is ALWAYS an expert adult (Creator/Influencer). 
+      2. TOPIC HANDLING: If the topic is about kids, the narrator is an ADULT teaching parents or showing a premium lifestyle. NEVER have a kid as the main narrator.
+      3. NO CHILDISH STUFF: BANNED: "sad face", "happy face", "magic", "aventura", "amiguinhos", "baby talk". 
+      4. VIRAL STRUCTURE: 
+         - 0s-3s: AGGRESSIVE HOOK. (e.g., "Pare de fazer isso!" or "O segredo profissional para...")
+         - Visuals: Change every 1.5 seconds.
+      5. TECHNICAL VALUE: Use real data (measurements, professional gear, elite techniques).
+
+      [OUTPUT FORMAT EXAMPLE (in the topic's language)]:
+      [00:00 - 00:03]
+      [Visual]: Descrição detalhada da cena.
+      [Áudio]: Fala exata do narrador.
     `;
 
     const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
@@ -71,22 +72,21 @@ export async function generateScriptAction(formData: {
           { role: "system", content: systemInstruction },
           { 
             role: "user", 
-            content: `Create a VIRAL ${formData.platform} script. 
-            Topic: "${formData.topic}"
-            Target Audience: ${formData.targetAudience}
-            Tone: ${formData.tone}
-            Duration: ${formData.duration}.
+            content: `Gera um roteiro viral para ${formData.platform}. 
+            TEMA: "${formData.topic}"
+            PÚBLICO: ${formData.targetAudience}
+            TOM: ${formData.tone}
+            DURAÇÃO: ${formData.duration}.
             
-            STRICT: Use fast-paced TikTok editing style. Start with a killer hook. No boring intros.` 
+            REGRAS FINAIS: Escreve TUDO em Português. O narrador é um especialista adulto. O roteiro deve ser dinâmico e profissional. Sem falas infantis.` 
           }
         ],
-        temperature: 0.6, // Increased slightly to allow for more energetic and "viral" phrasing
-        max_tokens: 3800,
+        temperature: 0.5, // Equilíbrio entre criatividade viral e obediência
+        max_tokens: 3500,
       })
     });
 
     if (!response.ok) throw new Error("Groq API Failure");
-
     const aiData = await response.json();
     const content = aiData.choices[0]?.message?.content;
 
@@ -98,6 +98,6 @@ export async function generateScriptAction(formData: {
     revalidatePath("/dashboard");
     return { success: true, content: content.trim() };
   } catch (error: any) {
-    return { success: false, error: "Generation failed." };
+    return { success: false, error: "Falha na geração." };
   }
 }
