@@ -47,24 +47,24 @@ export async function generateScriptAction(formData: {
 
     const profile = await db.collection("profiles").findOne({ userId: userId });
     if (!profile || profile.credits <= 0) {
-      return { success: false, error: "Créditos insuficientes. Faz upgrade para continuar!" };
+      return { success: false, error: "Créditos insuficientes!" };
     }
 
-    // PROMPT DE ALTA RETENÇÃO (Focado em TikTok, Reels e Shorts)
+    // PROMPT REFORMULADO: AGORA É UM ESPECIALISTA EM MARKETING VIRAL
     const systemInstruction = `
-      You are GenTone, the world's #1 Scriptwriter for short-form viral content (TikTok, Reels, Shorts).
-      Your goal is to create scripts that are easy to film at home but impossible to stop watching.
+      You are GenTone, an Elite Viral Scriptwriter for Social Media (TikTok/Reels/Shorts).
+      Your goal is to provide high-value, professional, and safe content for creators.
 
-      STRICT RULES:
-      1. THE HOOK (0-3s): Start with a "Pattern Interrupt". No greetings. Use a shocking fact, a direct benefit, or a specific problem.
-      2. VISUALS: Suggest only realistic actions for a creator with a phone (e.g., [Pointing at text], [Looking at camera], [Showing screen], [Fast transition]). 
-      3. AUDIO/SPEECH: Write exactly how people talk. Short, punchy, and conversational.
-      4. LANGUAGE: You MUST write 100% in the language of the topic: "${formData.topic}".
-      5. FORMAT: 
-         [Visual]: Description of what happens on screen.
-         [Audio]: The exact words to be spoken.
-      6. TONE: Strictly follow the ${formData.tone} tone.
-      7. NO META-TALK: Start the script directly.
+      STRICT CONTENT PROTOCOL:
+      1. SAFETY FIRST: Never suggest dangerous activities (e.g., kids near boiling water). If a topic involves kids, pivot to safe, creative alternatives (like a "Babyccino" or "Fake Coffee").
+      2. VIRAL ARCHITECTURE: 
+         - Start with a "Pattern Interrupt" Hook (First 3 seconds).
+         - Deliver 3 punchy value points.
+         - End with a strategic CTA (Call to Action).
+      3. VISUALS: Realistic for home studios. No complex scene descriptions. Use [Visual]: [Audio]: format.
+      4. TONE: Avoid "childish" narration. Even for fun topics, be professional and authoritative.
+      5. NO FLUFF: No "Hello friends". Go straight to the hook.
+      6. LANGUAGE: 100% in the language of the topic: "${formData.topic}".
     `;
 
     const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
@@ -79,38 +79,27 @@ export async function generateScriptAction(formData: {
           { role: "system", content: systemInstruction },
           { 
             role: "user", 
-            content: `Write a viral script about: "${formData.topic}". 
-            Target Audience: ${formData.targetAudience}. 
-            Duration: ${formData.duration}.` 
+            content: `Topic: "${formData.topic}". Tone: ${formData.tone}. Audience: ${formData.targetAudience}. Duration: ${formData.duration}.` 
           }
         ],
-        temperature: 0.75, // Equilíbrio perfeito entre criatividade e estrutura
-        max_tokens: 1500,
+        temperature: 0.6, // Temperatura mais baixa = Mais foco e menos "invenção"
       })
     });
 
-    if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error?.message || "Groq API Failure");
-    }
+    if (!response.ok) throw new Error("Groq API Failure");
 
     const aiData = await response.json();
     const content = aiData.choices[0]?.message?.content;
 
     if (!content) throw new Error("AI returned empty content.");
 
-    // Gravar e descontar crédito
     await Promise.all([
       db.collection("scripts").insertOne({
         userId: userId,
         title: formData.topic,
         content: content.trim(),
         createdAt: new Date(),
-        metadata: { 
-            tone: formData.tone, 
-            duration: formData.duration,
-            targetAudience: formData.targetAudience 
-        }
+        metadata: formData
       }),
       db.collection("profiles").updateOne(
         { userId: userId },
@@ -122,7 +111,7 @@ export async function generateScriptAction(formData: {
     return { success: true, content: content.trim() };
 
   } catch (error: any) {
-    console.error("LOG GENTONE [Generation Error]:", error.message);
-    return { success: false, error: "Falha ao gerar o roteiro. Tenta novamente." };
+    console.error("LOG GENTONE Error:", error.message);
+    return { success: false, error: "Failed to generate script." };
   }
 }
