@@ -200,6 +200,134 @@
 //     return { success: false, error: error.message || "Falha ao gerar roteiro." };
 //   }
 // }
+// "use server"
+
+// import clientPromise from "@/lib/mongodb";
+// import { auth } from "@clerk/nextjs/server";
+// import { revalidatePath } from "next/cache";
+
+// export async function getUserProfile() {
+//   const { userId } = await auth();
+//   if (!userId) return { success: false, error: "Not authenticated." };
+
+//   try {
+//     const client = await clientPromise;
+//     const db = client.db("gentone");
+//     const collection = db.collection("profiles");
+
+//     // Lógica de Upsert melhorada para garantir o retorno do documento
+//     const profile = await collection.findOneAndUpdate(
+//       { userId: userId },
+//       { $setOnInsert: { userId: userId, credits: 10, createdAt: new Date() } },
+//       { upsert: true, returnDocument: 'after' }
+//     );
+
+//     return { 
+//       success: true, 
+//       credits: profile ? profile.credits : 10 
+//     };
+//   } catch (error: any) {
+//     console.error("LOG GENTONE [MongoDB Error]:", error.message);
+//     return { success: false, error: "Database connection failed." };
+//   }
+// }
+
+// export async function generateScriptAction(formData: { 
+//   topic: string, 
+//   tone: string, 
+//   duration: string, 
+//   targetAudience: string 
+// }) {
+//   const { userId } = await auth();
+//   const GROQ_API_KEY = process.env.GROQ_API_KEY;
+
+//   if (!userId) return { success: false, error: "Session expired." };
+//   if (!GROQ_API_KEY) return { success: false, error: "AI API Key missing." };
+
+//   try {
+//     const client = await clientPromise;
+//     const db = client.db("gentone");
+
+//     // 1. Verificar créditos
+//     const profile = await db.collection("profiles").findOne({ userId: userId });
+//     if (!profile || profile.credits <= 0) {
+//       return { success: false, error: "Insufficient credits. Please upgrade." };
+//     }
+
+//     // 2. Chamada à IA (Groq) - Versão Ultra Poliglota
+//     const systemInstruction = `
+//       You are GenTone, a global AI scriptwriter. 
+      
+//       CRITICAL RULE: 
+//       1. DETECT the language of the user's TOPIC.
+//       2. RESPOND entirely in that detected language.
+      
+//       EXAMPLES:
+//       - Topic: "Como fazer café" -> Response: "Aqui está o seu roteiro... (Portuguese)"
+//       - Topic: "How to make coffee" -> Response: "Here is your script... (English)"
+//       - Topic: "Comment faire du café" -> Response: "Voici votre script... (French)"
+      
+//       SCRIPT DATA:
+//       - Tone: ${formData.tone}
+//       - Duration: ${formData.duration}
+//       - Target Audience: ${formData.targetAudience}
+//     `;
+
+//     const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+//       method: "POST",
+//       headers: { 
+//         "Authorization": `Bearer ${GROQ_API_KEY}`, 
+//         "Content-Type": "application/json" 
+//       },
+//       body: JSON.stringify({
+//         model: "llama-3.3-70b-versatile",
+//         messages: [
+//           { role: "system", content: systemInstruction },
+//           { role: "user", content: `Write a script about: "${formData.topic}"` } // Instrução em Inglês para neutralizar
+//         ],
+//         temperature: 0.3, // BAIXAMOS a temperatura para ela ser mais obediente às regras
+//       })
+//     });
+
+//     if (!response.ok) {
+//         const errorData = await response.json();
+//         throw new Error(errorData.error?.message || "Groq API Failure");
+//     }
+
+//     const aiData = await response.json();
+//     const content = aiData.choices[0]?.message?.content;
+
+//     if (!content) throw new Error("AI returned empty content.");
+
+//     // 3. Gravar histórico e descontar crédito
+//     await Promise.all([
+//       db.collection("scripts").insertOne({
+//         userId: userId,
+//         title: formData.topic,
+//         content: content,
+//         createdAt: new Date(),
+//         metadata: { 
+//             tone: formData.tone, 
+//             duration: formData.duration,
+//             targetAudience: formData.targetAudience 
+//         }
+//       }),
+//       db.collection("profiles").updateOne(
+//         { userId: userId },
+//         { $inc: { credits: -1 } }
+//       )
+//     ]);
+
+//     // Forçar o Next.js a atualizar os dados do Dashboard
+//     revalidatePath("/dashboard");
+
+//     return { success: true, content };
+
+//   } catch (error: any) {
+//     console.error("LOG GENTONE [Generation Error]:", error.message);
+//     return { success: false, error: error.message || "Failed to generate script." };
+//   }
+// }
 "use server"
 
 import clientPromise from "@/lib/mongodb";
@@ -215,7 +343,6 @@ export async function getUserProfile() {
     const db = client.db("gentone");
     const collection = db.collection("profiles");
 
-    // Lógica de Upsert melhorada para garantir o retorno do documento
     const profile = await collection.findOneAndUpdate(
       { userId: userId },
       { $setOnInsert: { userId: userId, credits: 10, createdAt: new Date() } },
@@ -248,28 +375,24 @@ export async function generateScriptAction(formData: {
     const client = await clientPromise;
     const db = client.db("gentone");
 
-    // 1. Verificar créditos
     const profile = await db.collection("profiles").findOne({ userId: userId });
     if (!profile || profile.credits <= 0) {
       return { success: false, error: "Insufficient credits. Please upgrade." };
     }
 
-    // 2. Chamada à IA (Groq) - Versão Ultra Poliglota
+    // SYSTEM INSTRUCTION MELHORADA
     const systemInstruction = `
-      You are GenTone, a global AI scriptwriter. 
+      You are GenTone, a professional video scriptwriter.
       
-      CRITICAL RULE: 
-      1. DETECT the language of the user's TOPIC.
-      2. RESPOND entirely in that detected language.
+      STRICT RULES:
+      1. LANGUAGE: You MUST identify the language of the USER TOPIC and write the ENTIRE script in that same language.
+      2. NO TALK: Do not provide intros like "Here is your script" or "I detected you speak...". Do not add notes at the end.
+      3. OUTPUT: Return ONLY the script content formatted in clean Markdown.
+      4. STRUCTURE: Include a catchy Title, an Intro (with timestamps), Scene breakdowns, and a Call to Action (CTA).
       
-      EXAMPLES:
-      - Topic: "Como fazer café" -> Response: "Aqui está o seu roteiro... (Portuguese)"
-      - Topic: "How to make coffee" -> Response: "Here is your script... (English)"
-      - Topic: "Comment faire du café" -> Response: "Voici votre script... (French)"
-      
-      SCRIPT DATA:
+      CONTEXT:
       - Tone: ${formData.tone}
-      - Duration: ${formData.duration}
+      - Estimated Duration: ${formData.duration}
       - Target Audience: ${formData.targetAudience}
     `;
 
@@ -283,9 +406,16 @@ export async function generateScriptAction(formData: {
         model: "llama-3.3-70b-versatile",
         messages: [
           { role: "system", content: systemInstruction },
-          { role: "user", content: `Write a script about: "${formData.topic}"` } // Instrução em Inglês para neutralizar
+          { 
+            role: "user", 
+            content: `Topic to write about: "${formData.topic}"` 
+          }
         ],
-        temperature: 0.3, // BAIXAMOS a temperatura para ela ser mais obediente às regras
+        temperature: 0.5, // Ajustado para manter criatividade sem perder a obediência
+        max_tokens: 2048,
+        top_p: 1,
+        stream: false,
+        stop: null
       })
     });
 
@@ -295,11 +425,13 @@ export async function generateScriptAction(formData: {
     }
 
     const aiData = await response.json();
-    const content = aiData.choices[0]?.message?.content;
+    let content = aiData.choices[0]?.message?.content;
 
     if (!content) throw new Error("AI returned empty content.");
 
-    // 3. Gravar histórico e descontar crédito
+    // Limpeza extra para garantir que não venham textos explicativos antes do Markdown
+    content = content.trim();
+
     await Promise.all([
       db.collection("scripts").insertOne({
         userId: userId,
@@ -318,7 +450,6 @@ export async function generateScriptAction(formData: {
       )
     ]);
 
-    // Forçar o Next.js a atualizar os dados do Dashboard
     revalidatePath("/dashboard");
 
     return { success: true, content };
