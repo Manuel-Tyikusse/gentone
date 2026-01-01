@@ -334,10 +334,6 @@ import clientPromise from "@/lib/mongodb";
 import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 
-/**
- * Obtém o perfil do utilizador ou cria um novo se não existir.
- * Unificado para usar a coleção "users" (mesma do Webhook).
- */
 export async function getUserProfile() {
   const { userId } = await auth();
   if (!userId) return { success: false, error: "Not authenticated." };
@@ -345,20 +341,11 @@ export async function getUserProfile() {
   try {
     const client = await clientPromise;
     const db = client.db("gentone");
-    const collection = db.collection("users");
+    const collection = db.collection("profiles"); // Mantive a tua coleção original
 
-    // Procura ou cria o utilizador. Garante que processedOrders existe para o Webhook.
     const profile = await collection.findOneAndUpdate(
       { userId: userId },
-      { 
-        $setOnInsert: { 
-          userId: userId, 
-          credits: 10, 
-          createdAt: new Date(),
-          processedOrders: [],
-          plan: "free"
-        } 
-      },
+      { $setOnInsert: { userId: userId, credits: 10, createdAt: new Date() } },
       { upsert: true, returnDocument: 'after' }
     );
 
@@ -372,9 +359,6 @@ export async function getUserProfile() {
   }
 }
 
-/**
- * Gera um roteiro viral utilizando IA (Groq/Llama 3.3).
- */
 export async function generateScriptAction(formData: { 
   topic: string, 
   tone: string, 
@@ -391,29 +375,25 @@ export async function generateScriptAction(formData: {
     const client = await clientPromise;
     const db = client.db("gentone");
 
-    // Verifica créditos na coleção "users"
-    const user = await db.collection("users").findOne({ userId: userId });
-    if (!user || user.credits <= 0) {
-      return { success: false, error: "Créditos insuficientes. Faz o upgrade para continuar!" };
+    const profile = await db.collection("profiles").findOne({ userId: userId });
+    if (!profile || profile.credits <= 0) {
+      return { success: false, error: "Insufficient credits. Please upgrade." };
     }
 
-    // SYSTEM PROMPT DE ALTA PERFORMANCE (GenTone Elite)
+    // SYSTEM PROMPT ALTERADO PARA ALTA PERFORMANCE (O QUE PEDISTE)
     const systemInstruction = `
-      You are GenTone, an elite Viral Scriptwriter and Social Media Growth Hacker.
-      Your task is to write a high-retention script that stops the scroll.
-
-      RULES:
-      1. LANGUAGE: You MUST write 100% in the language of the topic provided.
-      2. HOOK (0-3s): Start with a "Pattern Interrupt". No greetings, no "In this video". 
-         Start with a shocking fact, a controversial opinion, or a direct result.
-      3. BODY: Use "Micro-Open Loops" to keep them watching. Sentences must be short and punchy.
-      4. VISUALS: Include [Visual Cues] in brackets for the creator (e.g., [Screen Recording], [Zoom in]).
-      5. TONE: Strictly follow the "${formData.tone}" tone.
-      6. CTA: A high-energy call to action that doesn't sound like a bot.
-      7. FORMAT: Output only the script in professional Markdown. No meta-comments or "Sure, here it is".
+      You are GenTone, an elite Viral Scriptwriter for social media. Your scripts are designed to stop the scroll and maximize retention.
+      
+      CORE DIRECTIVES:
+      1. LANGUAGE: Write 100% in the language of the topic: "${formData.topic}".
+      2. HOOK: Start with a "Pattern Interrupt". No greetings, no introductions. Start with a result, a shock, or a pain point.
+      3. STRUCTURE: Use short, punchy sentences. Add [Visual Cues] for the creator in brackets.
+      4. TONE: Strictly use the ${formData.tone} tone.
+      5. CTA: Use a direct, high-energy Call to Action.
+      6. OUTPUT: Markdown only. No meta-comments.
     `;
 
-    const response = await fetch("https://api.api.groq.com/openai/v1/chat/completions", {
+    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
       headers: { 
         "Authorization": `Bearer ${GROQ_API_KEY}`, 
@@ -425,41 +405,33 @@ export async function generateScriptAction(formData: {
           { role: "system", content: systemInstruction },
           { 
             role: "user", 
-            content: `Topic: "${formData.topic}"
-            Target Audience: ${formData.targetAudience}
-            Estimated Duration: ${formData.duration}
-            Tone: ${formData.tone}` 
+            content: `Write a high-retention script.
+            TOPIC: "${formData.topic}"
+            AUDIENCE: ${formData.targetAudience}
+            DURATION: ${formData.duration}` 
           }
         ],
-        temperature: 0.8,
-        max_tokens: 1800,
+        temperature: 0.85,
+        max_tokens: 1500,
       })
     });
 
-    if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error?.message || "Groq API Failure");
-    }
+    if (!response.ok) throw new Error("Groq API Failure");
 
     const aiData = await response.json();
     let content = aiData.choices[0]?.message?.content;
 
     if (!content) throw new Error("AI returned empty content.");
 
-    // Operações na base de dados (Gravar script e descontar crédito)
     await Promise.all([
       db.collection("scripts").insertOne({
         userId: userId,
         title: formData.topic,
         content: content.trim(),
         createdAt: new Date(),
-        metadata: { 
-            tone: formData.tone, 
-            duration: formData.duration,
-            targetAudience: formData.targetAudience 
-        }
+        metadata: formData
       }),
-      db.collection("users").updateOne(
+      db.collection("profiles").updateOne(
         { userId: userId },
         { $inc: { credits: -1 } }
       )
@@ -469,7 +441,7 @@ export async function generateScriptAction(formData: {
     return { success: true, content: content.trim() };
 
   } catch (error: any) {
-    console.error("LOG GENTONE [Generation Error]:", error.message);
-    return { success: false, error: error.message || "Failed to generate script." };
+    console.error("LOG GENTONE Error:", error.message);
+    return { success: false, error: "Failed to generate script." };
   }
 }
