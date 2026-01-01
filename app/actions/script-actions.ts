@@ -29,17 +29,21 @@ export async function getUserProfile() {
   }
 }
 
+/**
+ * Agora recebe 'platform' para adaptar o estilo de edição e narrativa.
+ */
 export async function generateScriptAction(formData: { 
   topic: string, 
   tone: string, 
   duration: string, 
-  targetAudience: string 
+  targetAudience: string,
+  platform: string // EX: TikTok, YouTube, Instagram, Snapchat, LinkedIn
 }) {
   const { userId } = await auth();
   const GROQ_API_KEY = process.env.GROQ_API_KEY;
 
-  if (!userId) return { success: false, error: "Session expired." };
-  if (!GROQ_API_KEY) return { success: false, error: "AI API Key missing." };
+  if (!userId) return { success: false, error: "Sessão expirada." };
+  if (!GROQ_API_KEY) return { success: false, error: "Erro de configuração da API." };
 
   try {
     const client = await clientPromise;
@@ -50,19 +54,23 @@ export async function generateScriptAction(formData: {
       return { success: false, error: "Créditos insuficientes!" };
     }
 
-    // SYSTEM PROMPT: THE "GEN-TONE" HIGH-VALUE ENGINE
+    // SYSTEM PROMPT: PLATFORM-AWARE CONTENT ENGINE
     const systemInstruction = `
-      You are GenTone, a world-class Scriptwriter for YouTube Creators and Social Media Influencers.
-      Your scripts must be HIGH-VALUE, avoiding fluff, fillers, or childish "sing-along" moments.
+      You are GenTone, a Multi-Platform Scriptwriting Expert.
+      Your mission is to adapt the script style to the specific requirements of the platform: ${formData.platform}.
 
-      STRICT PRODUCTION GUIDELINES:
-      1. NO FILLERS: If the video is long (e.g. 5m), fill the time with FACTS, CURIOSITIES, and TECHNICAL TIPS. Never suggest "waiting" or "singing a song".
-      2. REALISTIC & SAFE: Never suggest dangerous acts (kids using stoves/fire). Focus on safe alternatives or parent-led actions.
-      3. ADULT-LEVEL STRUCTURE: Even for kids' topics, the NARRATOR must sound like a professional educator or an engaging influencer. Use the "Show, Don't Just Tell" principle.
-      4. VISUAL STORYTELLING: Use [Visual] for high-end camera cues (B-Roll, Macro shots, Graphic Overlays) and [Audio] for punchy narration.
-      5. FORMAT: Organise by timestamped segments (e.g., 0:00 - 1:00).
-      6. LANGUAGE: Write 100% in the language of the topic: "${formData.topic}".
-      7. TONE: Strictly follow the ${formData.tone} tone, but maintain an underlying sense of authority.
+      PLATFORM ADAPTATION RULES:
+      - TikTok/Reels: Extreme retention, fast cuts, trending hooks, focus on "visual loops" and on-screen text overlays.
+      - YouTube (Long): Storytelling, deep educational value, chapter-based structure, "subscribe" calls at the right moments.
+      - YouTube Shorts: Vertical focus, fast-paced, direct to the point.
+      - Snapchat: Raw, authentic, high-speed visual changes, interactive prompts.
+      - LinkedIn: Professional authority, clear structure, focus on business value.
+
+      STRICT QUALITY PROTOCOL:
+      1. LANGUAGE: 100% in the language of the topic: "${formData.topic}". Including [Visual] and [Audio] tags.
+      2. NO FILLERS: Write REAL dialogue and descriptions. Never say "The narrator explains". Write the explanation.
+      3. SAFETY: No dangerous acts. Focus on professional, safe demonstrations.
+      4. FORMAT: [Visual]: / [Audio]: with timestamped segments.
     `;
 
     const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
@@ -77,24 +85,25 @@ export async function generateScriptAction(formData: {
           { role: "system", content: systemInstruction },
           { 
             role: "user", 
-            content: `Write a high-end, professional script for a ${formData.duration} video.
-            TOPIC: "${formData.topic}"
-            AUDIENCE: ${formData.targetAudience}
-            TONE: ${formData.tone}.
-            Make it informative, safe, and visually engaging.` 
+            content: `Gera um roteiro profissional para a plataforma ${formData.platform}.
+            TEMA: "${formData.topic}"
+            PÚBLICO: ${formData.targetAudience}
+            TOM: ${formData.tone}
+            DURAÇÃO: ${formData.duration}.
+            Instrução: Escreve o roteiro completo com falas reais e descrições visuais no idioma do tema.` 
           }
         ],
-        temperature: 0.6, // Baixamos para garantir que ela não "invente" músicas ou bobagens
-        max_tokens: 3500,
+        temperature: 0.5,
+        max_tokens: 3800,
       })
     });
 
-    if (!response.ok) throw new Error("Groq API Failure");
+    if (!response.ok) throw new Error("Erro na API da Groq");
 
     const aiData = await response.json();
     const content = aiData.choices[0]?.message?.content;
 
-    if (!content) throw new Error("AI returned empty content.");
+    if (!content) throw new Error("A IA devolveu um conteúdo vazio.");
 
     await Promise.all([
       db.collection("scripts").insertOne({
@@ -102,7 +111,7 @@ export async function generateScriptAction(formData: {
         title: formData.topic,
         content: content.trim(),
         createdAt: new Date(),
-        metadata: formData
+        metadata: formData // Agora inclui a plataforma automaticamente
       }),
       db.collection("profiles").updateOne(
         { userId: userId },
@@ -115,6 +124,6 @@ export async function generateScriptAction(formData: {
 
   } catch (error: any) {
     console.error("LOG GENTONE Error:", error.message);
-    return { success: false, error: "Falha na geração profissional." };
+    return { success: false, error: "Erro ao gerar roteiro. Tenta novamente." };
   }
 }

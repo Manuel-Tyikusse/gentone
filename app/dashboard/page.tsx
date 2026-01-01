@@ -442,7 +442,7 @@
 import { useState, useEffect } from "react";
 import { UserButton, useUser } from "@clerk/nextjs";
 import { getUserProfile, generateScriptAction } from "@/app/actions/script-actions";
-import { Loader2, Sparkles, AlertCircle, History, Zap, Menu, X } from "lucide-react"; 
+import { Loader2, Sparkles, AlertCircle, History, Zap, Menu, X, Video } from "lucide-react"; 
 import ReactMarkdown from 'react-markdown';
 import Link from "next/link";
 import CopyButton from "@/components/CopyButton";
@@ -473,14 +473,17 @@ export default function DashboardPage() {
     }
     setLoading(true);
     setScript("");
-    setStatusMessage("Connecting to GenTone AI...");
+    setStatusMessage("GenTone is crafting your professional script...");
+    
     const formData = new FormData(e.currentTarget);
     const data = {
       topic: formData.get("topic") as string,
       tone: formData.get("tone") as string,
       duration: formData.get("duration") as string,
-      targetAudience: formData.get("targetAudience") as string
+      targetAudience: formData.get("targetAudience") as string,
+      platform: formData.get("platform") as string // Novo campo adicionado
     };
+
     try {
       const res = await generateScriptAction(data);
       if (res.success && res.content) {
@@ -512,7 +515,7 @@ export default function DashboardPage() {
         </button>
       </header>
 
-      {/* Sidebar - Fixa na esquerda no Desktop */}
+      {/* Sidebar */}
       <aside className={`sidebar-container ${isSidebarOpen ? 'show' : ''}`}>
         <div className="sidebar-inner">
           <div className="sidebar-top">
@@ -520,15 +523,15 @@ export default function DashboardPage() {
             
             <nav className="nav-links">
               <div className="credits-display">
-                <span className="label">CREDITS</span>
+                <span className="label">AVAILABLE CREDITS</span>
                 <span className="value">{credits ?? '0'}</span>
                 <Link href="/dashboard/pricing" className="btn-upgrade">
-                  <Zap size={14} fill="currentColor" /> Upgrade
+                  <Zap size={14} fill="currentColor" /> Upgrade Plan
                 </Link>
               </div>
 
               <Link href="/dashboard/history" className="nav-item">
-                <History size={18} /> <span>History</span>
+                <History size={18} /> <span>Generation History</span>
               </Link>
             </nav>
           </div>
@@ -538,76 +541,80 @@ export default function DashboardPage() {
               <UserButton afterSignOutUrl="/" />
               <div className="profile-info">
                 <p className="profile-name">{user?.firstName || "Creator"}</p>
-                <p className="profile-status">{credits !== null && credits > 10 ? "Pro Plan" : "Free Plan"}</p>
+                <p className="profile-status">{credits !== null && credits > 10 ? "Pro Creator" : "Free Plan"}</p>
               </div>
             </div>
           </div>
         </div>
       </aside>
 
-      {/* Conteúdo Principal */}
+      {/* Main Content */}
       <main className="main-content">
         <div className="content-container">
           
           <div className="header-section">
-            <h1 className="welcome-title">Welcome, {user?.firstName || "Creator"}! 👋</h1>
-            <p className="welcome-subtitle">What kind of magic are we scripting today?</p>
+            <h1 className="welcome-title">Welcome back, {user?.firstName || "Creator"}! 👋</h1>
+            <p className="welcome-subtitle">Let's create something viral today.</p>
           </div>
           
           <form onSubmit={handleGenerate} className="main-form">
-            <h2 className="form-header">Script Configuration</h2>
+            <div className="form-header-row">
+              <h2 className="form-header">Script Configuration</h2>
+              <div className="badge-platform"><Video size={14} /> AI Engine v2.0</div>
+            </div>
             
             <div className="form-grid">
-              <div className="field">
-                <label>Video Topic</label>
-                <input name="topic" required placeholder="Ex: 5 healthy habits for morning routines" />
+              <div className="field full-width">
+                <label>Video Topic / Idea</label>
+                <input name="topic" required placeholder="Ex: 5 ways to sell your SaaS with AI" />
               </div>
 
               <div className="field">
                 <label>Target Audience</label>
-                <input name="targetAudience" required placeholder="Ex: Busy professionals..." />
+                <input name="targetAudience" required placeholder="Ex: Tech entrepreneurs" />
+              </div>
+
+              <div className="field">
+                <label>Platform</label>
+                <select name="platform" required>
+                  <option value="TikTok">TikTok</option>
+                  <option value="Instagram Reels">Instagram Reels</option>
+                  <option value="YouTube Shorts">YouTube Shorts</option>
+                  <option value="YouTube Long Form">YouTube (Long Video)</option>
+                  <option value="Snapchat">Snapchat</option>
+                  <option value="LinkedIn Video">LinkedIn</option>
+                </select>
               </div>
 
               <div className="field">
                 <label>Tone of Voice</label>
                 <select name="tone" required>
-                  <optgroup label="Standard & Professional">
-                    <option value="Professional">Professional & Formal</option>
-                    <option value="Conversational">Conversational (Friendly)</option>
-                    <option value="Informative">Clear & Informative</option>
-                    <option value="Authoritative">Authoritative & Expert</option>
+                  <optgroup label="Popular">
+                    <option value="High Energy">High Energy / Viral</option>
+                    <option value="Professional">Professional</option>
+                    <option value="Motivational">Motivational</option>
                   </optgroup>
-                  <optgroup label="Engagement & Hype">
-                    <option value="High Energy">High Energy / Hype</option>
-                    <option value="Motivational">Motivational & Inspiring</option>
-                    <option value="Persuasive">Sales & Persuasive (VSL)</option>
-                    <option value="Urgent">Urgent / Breaking News</option>
-                    <option value="Trendy">Gen-Z / Trendy Slang</option>
-                  </optgroup>
-                  <optgroup label="Entertainment & Storytelling">
-                    <option value="Funny">Funny & Humorous</option>
-                    <option value="Storytelling">Narrative Storytelling</option>
+                  <optgroup label="Creative">
+                    <option value="Funny">Funny & Witty</option>
                     <option value="Dramatic">Intense & Dramatic</option>
-                    <option value="Suspenseful">Mystery & Suspense</option>
-                    <option value="Sarcastic">Sarcastic & Witty</option>
+                    <option value="Storytelling">Narrative</option>
                   </optgroup>
-                  <optgroup label="Premium & Niche">
-                    <option value="Luxury">Elegant & Luxury</option>
-                    <option value="Minimalist">Clean & Minimalist</option>
-                    <option value="Educational">Academic & Deep Dive</option>
-                    <option value="Direct">Direct & No-Nonsense</option>
+                  <optgroup label="Business">
+                    <option value="Persuasive">Sales / Persuasive</option>
+                    <option value="Luxury">Elegant / Luxury</option>
+                    <option value="Minimalist">Clean & Direct</option>
                   </optgroup>
                 </select>
               </div>
 
               <div className="field">
-                <label>Duration</label>
+                <label>Estimated Duration</label>
                 <select name="duration" required>
-                  <option value="30 seconds">30 seconds</option>
-                  <option value="60 seconds">60 seconds</option>
-                  <option value="2 minutes">2 minutes</option>
-                  <option value="5 minutes">5 minutes</option>
-                  <option value="10 minutes">10 minutes</option>
+                  <option value="15-30 seconds">Short (15-30s)</option>
+                  <option value="60 seconds">Standard (60s)</option>
+                  <option value="2-3 minutes">Medium (2-3m)</option>
+                  <option value="5 minutes">Long (5m)</option>
+                  <option value="10 minutes">Deep Dive (10m+)</option>
                 </select>
               </div>
             </div>
@@ -618,21 +625,21 @@ export default function DashboardPage() {
               className="btn-generate"
               style={{ background: hasNoCredits ? '#1e293b' : '#2563eb' }}
             >
-              {loading ? <Loader2 className="animate-spin" /> : hasNoCredits ? "No Credits Left" : <><Sparkles size={18}/> Generate Script</>}
+              {loading ? <Loader2 className="animate-spin" /> : hasNoCredits ? "No Credits Left" : <><Sparkles size={18}/> Craft My Script</>}
             </button>
           </form>
 
           {statusMessage && (
             <div className={`alert-box ${hasNoCredits ? 'alert-error' : ''}`}>
               <AlertCircle size={18} /> <span>{statusMessage}</span>
-              {hasNoCredits && <Link href="/dashboard/pricing" className="get-credits-link">Get Credits</Link>}
+              {hasNoCredits && <Link href="/dashboard/pricing" className="get-credits-link">Upgrade Now</Link>}
             </div>
           )}
 
           {script && (
             <div className="script-output">
               <div className="output-header">
-                <h3>✨ Generated Script:</h3>
+                <h3>✨ Your GenTone Script:</h3>
                 <CopyButton text={script} />
               </div>
               <div className="markdown-body">
@@ -652,195 +659,64 @@ export default function DashboardPage() {
           --border: #1e293b;
         }
 
-        .dashboard-layout {
-          display: flex;
-          height: 100vh;
-          width: 100vw;
-          background: var(--bg-main);
-          color: white;
-          font-family: 'Inter', sans-serif;
-          overflow: hidden;
-        }
+        .dashboard-layout { display: flex; height: 100vh; width: 100vw; background: var(--bg-main); color: white; font-family: 'Inter', sans-serif; overflow: hidden; }
 
         /* SIDEBAR */
-        .sidebar-container {
-          width: var(--sidebar-width);
-          border-right: 1px solid var(--border);
-          flex-shrink: 0;
-          background: var(--bg-main);
-          z-index: 100;
-        }
-
-        .sidebar-inner {
-          display: flex;
-          flex-direction: column;
-          justify-content: space-between;
-          height: 100%;
-          padding: 24px;
-        }
-
+        .sidebar-container { width: var(--sidebar-width); border-right: 1px solid var(--border); flex-shrink: 0; background: var(--bg-main); z-index: 100; }
+        .sidebar-inner { display: flex; flex-direction: column; justify-content: space-between; height: 100%; padding: 24px; }
         .sidebar-logo { color: #3b82f6; font-size: 1.5rem; font-weight: bold; margin-bottom: 30px; }
-
-        .credits-display {
-          background: rgba(37, 99, 235, 0.08);
-          border: 1px solid rgba(37, 99, 235, 0.2);
-          border-radius: 16px;
-          padding: 20px;
-          margin-bottom: 20px;
-        }
-
+        .credits-display { background: rgba(37, 99, 235, 0.08); border: 1px solid rgba(37, 99, 235, 0.2); border-radius: 16px; padding: 20px; margin-bottom: 20px; }
         .credits-display .label { font-size: 0.65rem; color: #60a5fa; font-weight: 800; letter-spacing: 0.05em; }
         .credits-display .value { font-size: 2rem; font-weight: bold; display: block; margin: 5px 0 12px 0; }
-
-        .btn-upgrade {
-          background: var(--accent);
-          color: white;
-          text-decoration: none;
-          padding: 10px;
-          border-radius: 8px;
-          font-size: 0.85rem;
-          font-weight: bold;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 8px;
-          transition: 0.2s;
-        }
+        .btn-upgrade { background: var(--accent); color: white; text-decoration: none; padding: 10px; border-radius: 8px; font-size: 0.85rem; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s; }
         .btn-upgrade:hover { opacity: 0.9; transform: translateY(-1px); }
-
-        .nav-item {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          padding: 12px;
-          background: var(--bg-card);
-          border: 1px solid var(--border);
-          border-radius: 12px;
-          color: #cbd5e1;
-          text-decoration: none;
-          font-size: 0.9rem;
-        }
-
-        .profile-card {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          padding: 15px;
-          background: rgba(255,255,255,0.03);
-          border-radius: 16px;
-        }
-
+        .nav-item { display: flex; align-items: center; gap: 12px; padding: 12px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; color: #cbd5e1; text-decoration: none; font-size: 0.9rem; }
+        .profile-card { display: flex; align-items: center; gap: 12px; padding: 15px; background: rgba(255,255,255,0.03); border-radius: 16px; }
         .profile-info { overflow: hidden; }
         .profile-name { font-size: 0.85rem; font-weight: 600; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .profile-status { font-size: 0.7rem; color: #64748b; margin: 0; }
 
         /* MAIN CONTENT */
-        .main-content {
-          flex: 1;
-          overflow-y: auto;
-          padding: 60px 40px;
-          background: radial-gradient(circle at top right, rgba(37, 99, 235, 0.05), transparent);
-        }
-
+        .main-content { flex: 1; overflow-y: auto; padding: 60px 40px; background: radial-gradient(circle at top right, rgba(37, 99, 235, 0.05), transparent); }
         .content-container { max-width: 850px; margin: 0 auto; }
-
         .welcome-title { font-size: 2.2rem; font-weight: 800; margin-bottom: 10px; }
         .welcome-subtitle { color: #94a3b8; font-size: 1.1rem; margin-bottom: 40px; }
 
-        .main-form {
-          background: var(--bg-card);
-          border: 1px solid var(--border);
-          padding: 35px;
-          border-radius: 24px;
-          box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-        }
+        .main-form { background: var(--bg-card); border: 1px solid var(--border); padding: 35px; border-radius: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+        .form-header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+        .form-header { font-size: 1.2rem; color: #f1f5f9; font-weight: 600; margin: 0; }
+        .badge-platform { background: rgba(37, 99, 235, 0.1); color: #60a5fa; padding: 6px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: 700; display: flex; align-items: center; gap: 6px; border: 1px solid rgba(37, 99, 235, 0.2); }
 
-        .form-header { font-size: 1.2rem; margin-bottom: 25px; color: #f1f5f9; font-weight: 600; }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px; }
+        .full-width { grid-column: span 2; }
 
-        .form-grid {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 25px;
-          margin-bottom: 30px;
-        }
+        .field label { display: block; font-size: 0.8rem; color: #64748b; margin-bottom: 8px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.02em; }
+        .field input, .field select { width: 100%; background: var(--bg-main); border: 1px solid var(--border); padding: 14px; border-radius: 12px; color: white; font-size: 0.95rem; transition: 0.2s; }
+        .field input:focus, .field select:focus { border-color: var(--accent); outline: none; box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2); }
 
-        .field label { display: block; font-size: 0.85rem; color: #64748b; margin-bottom: 10px; font-weight: 500; }
-        .field input, .field select {
-          width: 100%;
-          background: var(--bg-main);
-          border: 1px solid var(--border);
-          padding: 14px;
-          border-radius: 12px;
-          color: white;
-          font-size: 0.95rem;
-          transition: border-color 0.2s;
-        }
-        .field input:focus, .field select:focus { border-color: var(--accent); outline: none; }
+        .btn-generate { width: 100%; color: white; border: none; padding: 18px; border-radius: 12px; font-size: 1rem; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 12px; cursor: pointer; transition: 0.2s; }
+        .btn-generate:hover:not(:disabled) { transform: translateY(-2px); filter: brightness(1.1); }
 
-        .btn-generate {
-          width: 100%;
-          color: white;
-          border: none;
-          padding: 18px;
-          border-radius: 12px;
-          font-size: 1rem;
-          font-weight: bold;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 12px;
-          cursor: pointer;
-          transition: 0.2s;
-        }
-
-        .alert-box {
-          margin-top: 25px; padding: 16px 20px; background: var(--border);
-          border-radius: 12px; display: flex; align-items: center; gap: 12px; font-size: 0.9rem;
-        }
+        .alert-box { margin-top: 25px; padding: 16px 20px; background: var(--border); border-radius: 12px; display: flex; align-items: center; gap: 12px; font-size: 0.9rem; }
         .alert-error { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); }
         .get-credits-link { margin-left: auto; font-weight: bold; color: #ef4444; text-decoration: none; }
 
-        .script-output {
-          margin-top: 40px;
-          background: var(--bg-card);
-          padding: 30px;
-          border-radius: 24px;
-          border: 1px solid var(--accent);
-        }
-
+        .script-output { margin-top: 40px; background: var(--bg-card); padding: 30px; border-radius: 24px; border: 1px solid var(--accent); animation: fadeIn 0.5s ease; }
         .output-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .markdown-body {
-          background: var(--bg-main);
-          padding: 25px;
-          border-radius: 16px;
-          line-height: 1.7;
-          color: #e2e8f0;
-          border: 1px solid var(--border);
-        }
+        .markdown-body { background: var(--bg-main); padding: 25px; border-radius: 16px; line-height: 1.7; color: #e2e8f0; border: 1px solid var(--border); }
 
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .mobile-header { display: none; }
         .animate-spin { animation: spin 1s linear infinite; }
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
-        /* RESPONSIVIDADE */
-        @media (max-width: 1024px) {
-          .form-grid { grid-template-columns: 1fr; }
-        }
-
+        @media (max-width: 1024px) { .form-grid { grid-template-columns: 1fr; } .full-width { grid-column: span 1; } }
         @media (max-width: 768px) {
-          .dashboard-layout { flex-direction: column; overflow: hidden; }
-          .sidebar-container {
-            position: fixed; left: 0; top: 60px; height: calc(100vh - 60px);
-            width: 100%; transform: translateX(-100%); transition: transform 0.3s ease;
-          }
+          .dashboard-layout { flex-direction: column; }
+          .sidebar-container { position: fixed; left: 0; top: 60px; height: calc(100vh - 60px); width: 100%; transform: translateX(-100%); transition: transform 0.3s ease; }
           .sidebar-container.show { transform: translateX(0); }
-          .mobile-header {
-            display: flex; height: 60px; padding: 0 20px; align-items: center;
-            justify-content: space-between; background: var(--bg-card);
-            border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 110;
-          }
-          .main-content { padding: 30px 20px; overflow-y: auto; }
-          .main-form { padding: 25px; }
+          .mobile-header { display: flex; height: 60px; padding: 0 20px; align-items: center; justify-content: space-between; background: var(--bg-card); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 110; }
+          .main-content { padding: 30px 20px; }
         }
       `}} />
     </div>
