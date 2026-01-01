@@ -4,6 +4,9 @@ import clientPromise from "@/lib/mongodb";
 import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 
+/**
+ * Gets or creates the user profile in MongoDB.
+ */
 export async function getUserProfile() {
   const { userId } = await auth();
   if (!userId) return { success: false, error: "Not authenticated." };
@@ -24,26 +27,27 @@ export async function getUserProfile() {
       credits: profile ? profile.credits : 10 
     };
   } catch (error: any) {
-    console.error("LOG GENTONE [MongoDB Error]:", error.message);
+    console.error("GENTONE LOG [MongoDB Error]:", error.message);
     return { success: false, error: "Database connection failed." };
   }
 }
 
 /**
- * Agora recebe 'platform' para adaptar o estilo de edição e narrativa.
+ * Generates professional scripts with high-retention logic.
+ * The system prompt is in English for maximum AI precision.
  */
 export async function generateScriptAction(formData: { 
   topic: string, 
   tone: string, 
   duration: string, 
   targetAudience: string,
-  platform: string // EX: TikTok, YouTube, Instagram, Snapchat, LinkedIn
+  platform: string
 }) {
   const { userId } = await auth();
   const GROQ_API_KEY = process.env.GROQ_API_KEY;
 
-  if (!userId) return { success: false, error: "Sessão expirada." };
-  if (!GROQ_API_KEY) return { success: false, error: "Erro de configuração da API." };
+  if (!userId) return { success: false, error: "Session expired." };
+  if (!GROQ_API_KEY) return { success: false, error: "AI API Key missing." };
 
   try {
     const client = await clientPromise;
@@ -51,26 +55,22 @@ export async function generateScriptAction(formData: {
 
     const profile = await db.collection("profiles").findOne({ userId: userId });
     if (!profile || profile.credits <= 0) {
-      return { success: false, error: "Créditos insuficientes!" };
+      return { success: false, error: "Insufficient credits!" };
     }
 
-    // SYSTEM PROMPT: PLATFORM-AWARE CONTENT ENGINE
+    // GENTONE HYPER-RETENTION V4 - SYSTEM RULES IN ENGLISH
     const systemInstruction = `
-      You are GenTone, a Multi-Platform Scriptwriting Expert.
-      Your mission is to adapt the script style to the specific requirements of the platform: ${formData.platform}.
+      You are GenTone, a world-class Viral Growth Strategist. You write high-converting scripts for pro influencers.
 
-      PLATFORM ADAPTATION RULES:
-      - TikTok/Reels: Extreme retention, fast cuts, trending hooks, focus on "visual loops" and on-screen text overlays.
-      - YouTube (Long): Storytelling, deep educational value, chapter-based structure, "subscribe" calls at the right moments.
-      - YouTube Shorts: Vertical focus, fast-paced, direct to the point.
-      - Snapchat: Raw, authentic, high-speed visual changes, interactive prompts.
-      - LinkedIn: Professional authority, clear structure, focus on business value.
-
-      STRICT QUALITY PROTOCOL:
-      1. LANGUAGE: 100% in the language of the topic: "${formData.topic}". Including [Visual] and [Audio] tags.
-      2. NO FILLERS: Write REAL dialogue and descriptions. Never say "The narrator explains". Write the explanation.
-      3. SAFETY: No dangerous acts. Focus on professional, safe demonstrations.
-      4. FORMAT: [Visual]: / [Audio]: with timestamped segments.
+      CORE PRINCIPLES:
+      1. NO INFANTILIZATION: Never write "childish" scripts, even if the topic is for kids. The creator is an ADULT expert. No "singing", no "cooking hats", no "hello friends".
+      2. PLATFORM SPECIFIC: 
+         - TikTok/Reels/Shorts: Extreme retention. Start with an AGGRESSIVE hook (shocking result, secret revealed, or curiosity gap). Visual changes every 2 seconds.
+         - YouTube Long-form: Deep value. Use timestamped chapters. Replace fillers with facts, science, and elite tips.
+      3. VISUALS: Use pro-level descriptions: [Quick Cut], [Macro Shot], [Text Overlay: "THE SECRET"], [B-Roll: Cinematic steam].
+      4. AUDIO: Punchy, high-energy, and professional. Write the exact words the narrator says. Do NOT say "narrator explains", actually write the expert explanation.
+      5. SAFETY: Zero tolerance for danger. If children are involved, it must be parent-led or use safe alternatives.
+      6. LANGUAGE COMPLIANCE: You MUST write the ENTIRE script (including Visual/Audio tags) in the detected language of the topic: "${formData.topic}". 
     `;
 
     const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
@@ -85,33 +85,35 @@ export async function generateScriptAction(formData: {
           { role: "system", content: systemInstruction },
           { 
             role: "user", 
-            content: `Gera um roteiro profissional para a plataforma ${formData.platform}.
-            TEMA: "${formData.topic}"
-            PÚBLICO: ${formData.targetAudience}
-            TOM: ${formData.tone}
-            DURAÇÃO: ${formData.duration}.
-            Instrução: Escreve o roteiro completo com falas reais e descrições visuais no idioma do tema.` 
+            content: `Generate a professional ${formData.platform} script.
+            Topic: "${formData.topic}"
+            Tone: ${formData.tone}
+            Target Audience: ${formData.targetAudience}
+            Duration: ${formData.duration}.
+            
+            Important: Ensure the hook is extremely strong. Avoid any "baby talk". Everything must be in the language of the topic.` 
           }
         ],
-        temperature: 0.5,
+        temperature: 0.45, // Lower temperature for stricter adherence to instructions.
         max_tokens: 3800,
       })
     });
 
-    if (!response.ok) throw new Error("Erro na API da Groq");
+    if (!response.ok) throw new Error("Groq API Request Failed");
 
     const aiData = await response.json();
     const content = aiData.choices[0]?.message?.content;
 
-    if (!content) throw new Error("A IA devolveu um conteúdo vazio.");
+    if (!content) throw new Error("AI returned empty content.");
 
+    // Atomic update: Record script and decrease credits
     await Promise.all([
       db.collection("scripts").insertOne({
         userId: userId,
         title: formData.topic,
         content: content.trim(),
         createdAt: new Date(),
-        metadata: formData // Agora inclui a plataforma automaticamente
+        metadata: formData
       }),
       db.collection("profiles").updateOne(
         { userId: userId },
@@ -123,7 +125,7 @@ export async function generateScriptAction(formData: {
     return { success: true, content: content.trim() };
 
   } catch (error: any) {
-    console.error("LOG GENTONE Error:", error.message);
-    return { success: false, error: "Erro ao gerar roteiro. Tenta novamente." };
+    console.error("GENTONE LOG [Generation Error]:", error.message);
+    return { success: false, error: "Failed to generate professional script." };
   }
 }
