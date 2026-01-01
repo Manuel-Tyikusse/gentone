@@ -50,18 +50,19 @@ export async function generateScriptAction(formData: {
       return { success: false, error: "Créditos insuficientes!" };
     }
 
-    // SYSTEM PROMPT: ADAPTIVE CONTENT ENGINE (Short & Long Form)
+    // SYSTEM PROMPT: THE "GEN-TONE" HIGH-VALUE ENGINE
     const systemInstruction = `
-      You are GenTone, a Senior Content Strategist for YouTube, TikTok, and Instagram.
-      You create high-quality scripts tailored to the user's specific duration and audience.
+      You are GenTone, a world-class Scriptwriter for YouTube Creators and Social Media Influencers.
+      Your scripts must be HIGH-VALUE, avoiding fluff, fillers, or childish "sing-along" moments.
 
-      CORE ARCHITECTURE:
-      1. DURATION COMPLIANCE: If the duration is long (e.g., 5-10 min), structure the script with "Chapters" and "Acts". If short (under 60s), focus on "High-Speed Retention".
-      2. TONE ALIGNMENT: Use a professional, expert-level tone tailored to "${formData.tone}". Never be "childish" unless the audience is specifically young children, but even then, maintain professional production values.
-      3. VISUAL DICTIONARY: Use [Visual] for cinematography/action and [Audio] for speech. Include [B-Roll], [Graphic Overlay], and [Sound Effect] cues.
-      4. SCRIPT QUALITY: Avoid repetitive scenes. Ensure the narrative flows logically from Hook -> Content -> Call to Action.
-      5. LANGUAGE: Write 100% in the language of the topic: "${formData.topic}".
-      6. NO RESTRICTIONS: Do not lecture the user about duration limits. Just fulfill the requested time: ${formData.duration}.
+      STRICT PRODUCTION GUIDELINES:
+      1. NO FILLERS: If the video is long (e.g. 5m), fill the time with FACTS, CURIOSITIES, and TECHNICAL TIPS. Never suggest "waiting" or "singing a song".
+      2. REALISTIC & SAFE: Never suggest dangerous acts (kids using stoves/fire). Focus on safe alternatives or parent-led actions.
+      3. ADULT-LEVEL STRUCTURE: Even for kids' topics, the NARRATOR must sound like a professional educator or an engaging influencer. Use the "Show, Don't Just Tell" principle.
+      4. VISUAL STORYTELLING: Use [Visual] for high-end camera cues (B-Roll, Macro shots, Graphic Overlays) and [Audio] for punchy narration.
+      5. FORMAT: Organise by timestamped segments (e.g., 0:00 - 1:00).
+      6. LANGUAGE: Write 100% in the language of the topic: "${formData.topic}".
+      7. TONE: Strictly follow the ${formData.tone} tone, but maintain an underlying sense of authority.
     `;
 
     const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
@@ -76,22 +77,19 @@ export async function generateScriptAction(formData: {
           { role: "system", content: systemInstruction },
           { 
             role: "user", 
-            content: `Create a full, detailed script.
+            content: `Write a high-end, professional script for a ${formData.duration} video.
             TOPIC: "${formData.topic}"
             AUDIENCE: ${formData.targetAudience}
-            TONE: ${formData.tone}
-            REQUESTED DURATION: ${formData.duration}` 
+            TONE: ${formData.tone}.
+            Make it informative, safe, and visually engaging.` 
           }
         ],
-        temperature: 0.7, // Um pouco mais de "espaço" para scripts longos e criativos
-        max_tokens: 3000, // Aumentado para suportar scripts de 5-10 minutos
+        temperature: 0.6, // Baixamos para garantir que ela não "invente" músicas ou bobagens
+        max_tokens: 3500,
       })
     });
 
-    if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error?.message || "Groq API Failure");
-    }
+    if (!response.ok) throw new Error("Groq API Failure");
 
     const aiData = await response.json();
     const content = aiData.choices[0]?.message?.content;
@@ -117,6 +115,6 @@ export async function generateScriptAction(formData: {
 
   } catch (error: any) {
     console.error("LOG GENTONE Error:", error.message);
-    return { success: false, error: "Falha ao gerar roteiro. Tenta novamente." };
+    return { success: false, error: "Falha na geração profissional." };
   }
 }
