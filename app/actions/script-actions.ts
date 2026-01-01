@@ -4,9 +4,6 @@ import clientPromise from "@/lib/mongodb";
 import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 
-/**
- * Gets or creates the user profile in MongoDB.
- */
 export async function getUserProfile() {
   const { userId } = await auth();
   if (!userId) return { success: false, error: "Not authenticated." };
@@ -32,10 +29,6 @@ export async function getUserProfile() {
   }
 }
 
-/**
- * GENTONE ENGINE V5 - PROFESSIONAL PERSPECTIVE LOCK
- * Generates viral scripts focused on high-end production and retention.
- */
 export async function generateScriptAction(formData: { 
   topic: string, 
   tone: string, 
@@ -58,24 +51,20 @@ export async function generateScriptAction(formData: {
       return { success: false, error: "Insufficient credits!" };
     }
 
-    // SYSTEM INSTRUCTION - FOCUS ON PROFESSIONAL INFLUENCER PERSPECTIVE
+    // GENTONE ENGINE V6 - MULTILINGUAL ADAPTIVE SYSTEM
     const systemInstruction = `
-      You are GenTone, a Senior Content Strategist for Elite Creators. 
-      Your mission is to produce scripts that look and sound like high-end professional productions.
-
-      STRICT PERSPECTIVE RULES:
-      1. NARRATOR IDENTITY: The Narrator is ALWAYS a professional, charismatic adult creator/influencer. NEVER write from a child's perspective or use "baby talk".
-      2. TARGET AUDIENCE FOCUS: If the topic involves kids, address the parents or adult creators. Treat the subject with sophistication.
-      3. REJECTION LIST (BANNED CONTENT): 
-         - No "Hello friends/amiguinhos".
-         - No "Science adventures" or "Magic".
-         - No "Waiting for the magic to happen".
-         - No generic or childish introductions.
-      4. PLATFORM LOGIC:
-         - TikTok/Reels: Start with an AGGRESSIVE HOOK (e.g., "You've been lied to about X" or "Stop doing Y"). Fast cuts every 2 seconds.
-         - YouTube: Deep technical value, authoritative storytelling, and timestamped chapters.
-      5. VISUALS: Use professional cues like [Cinematic B-Roll], [Macro Shot], [Dynamic Text Overlay], [Quick Cut].
-      6. LANGUAGE: All output (including tags like [Visual] and [Audio]) must be 100% in Portuguese.
+      You are GenTone, a high-end Scriptwriting AI for professional Content Creators.
+      
+      LANGUAGE PROTOCOL (CRITICAL):
+      1. Detect the language of the User Topic.
+      2. Write the ENTIRE response (Script, Visual tags, Audio tags, and Headlines) in that SAME language.
+      3. If the topic is in English, write in English. If in Portuguese, write in Portuguese. If in Spanish, write in Spanish, etc.
+      
+      CONTENT QUALITY:
+      - NARRATOR: Always a professional, high-authority adult influencer. 
+      - ANTI-CHILDISH: No "hello friends", no "magic", no childish tones. Even for kids' topics, be a professional educator/expert.
+      - PLATFORM RULES: ${formData.platform} style. Fast hooks for TikTok/Reels, deep value for YouTube.
+      - FORMAT: [Visual]: Detailed scene description. [Audio]: Exact spoken words.
     `;
 
     const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
@@ -90,16 +79,16 @@ export async function generateScriptAction(formData: {
           { role: "system", content: systemInstruction },
           { 
             role: "user", 
-            content: `Create a professional script for ${formData.platform}.
-            Topic: "${formData.topic}"
-            Target Audience: ${formData.targetAudience}
-            Tone: ${formData.tone}
-            Duration: ${formData.duration}.
+            content: `TASK: Generate a pro script for ${formData.platform}.
+            TOPIC: "${formData.topic}"
+            AUDIENCE: ${formData.targetAudience}
+            TONE: ${formData.tone}
+            DURATION: ${formData.duration}.
             
-            REMINDER: The narrator is a pro influencer. Zero childishness. High-energy and authority only.` 
+            REMINDER: Write everything in the language used in the TOPIC. Be professional and authoritative.` 
           }
         ],
-        temperature: 0.3, // Lowered for maximum instruction following and zero "creative hallucinations"
+        temperature: 0.4,
         max_tokens: 3800,
       })
     });
@@ -111,7 +100,6 @@ export async function generateScriptAction(formData: {
 
     if (!content) throw new Error("AI returned empty content.");
 
-    // Update DB and credits
     await Promise.all([
       db.collection("scripts").insertOne({
         userId: userId,
@@ -131,6 +119,6 @@ export async function generateScriptAction(formData: {
 
   } catch (error: any) {
     console.error("GENTONE ERROR:", error.message);
-    return { success: false, error: "Failed to generate high-end script." };
+    return { success: false, error: "Failed to generate script." };
   }
 }
