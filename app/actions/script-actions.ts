@@ -380,17 +380,19 @@ export async function generateScriptAction(formData: {
       return { success: false, error: "Insufficient credits. Please upgrade." };
     }
 
-    // --- NOVA LÓGICA DE PROMPT INFALÍVEL ---
+    // SYSTEM PROMPT DE ALTA PERFORMANCE
     const systemInstruction = `
-      You are GenTone, a professional video scriptwriter for TikTok and YouTube.
+      You are GenTone, an elite Viral Scriptwriter for social media (TikTok, Reels, YouTube).
       
-      STRICT OPERATING INSTRUCTIONS:
-      1. OUTPUT LANGUAGE: You must write the script in the SAME LANGUAGE as the user's input topic.
-      2. IF THE TOPIC IS IN PORTUGUESE, RESPOND IN PORTUGUESE.
-      3. IF THE TOPIC IS IN ENGLISH, RESPOND IN ENGLISH.
-      4. DO NOT use Spanish unless the topic is specifically in Spanish.
-      5. NO CONVERSATION: Do not say "Claro", "Sure", "Aquí tienes". Output ONLY the script content.
-      6. FORMAT: Use professional Markdown with: Title, Introduction, Body Scenes, and a strong Call to Action.
+      CORE DIRECTIVES:
+      1. LANGUAGE MIRRORING: You MUST detect the language of the TOPIC and write the ENTIRE script in that language. No English intros or outrous if the topic is in Portuguese.
+      2. VIRAL STRUCTURE: Use the "Hook-Value-CTA" framework.
+         - Hook: A pattern-interrupting first sentence that stops the scroll.
+         - Value: Punchy, fast-paced points. No corporate jargon.
+         - CTA: A direct, high-energy call to action.
+      3. TONE ADHERENCE: Use the selected tone: ${formData.tone}.
+      4. READABILITY: Use short, spoken-word sentences. Write for the ear, not for the eye. 
+      5. NO CHAT: Do not say "Sure", "Here is your script" or add any meta-comments.
     `;
 
     const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
@@ -405,16 +407,17 @@ export async function generateScriptAction(formData: {
           { role: "system", content: systemInstruction },
           { 
             role: "user", 
-            content: `TASK: Write a video script.
-            USER TOPIC: "${formData.topic}"
-            TONE: ${formData.tone}
-            TARGET AUDIENCE: ${formData.targetAudience}
-            DURATION: ${formData.duration}
+            content: `Write a high-retention script.
+            LANGUAGE: Use the same language as the topic below.
+            TOPIC: "${formData.topic}"
+            AUDIENCE: ${formData.targetAudience}
+            TIME LIMIT: ${formData.duration}
             
-            REMEMBER: Use the language of the TOPIC provided above.` 
+            Format: Title, then the script content in Markdown.` 
           }
         ],
-        temperature: 0.6, // Temperatura equilibrada para melhor qualidade de roteiro
+        temperature: 0.85, // Criatividade aumentada para evitar textos genéricos
+        max_tokens: 1500,
       })
     });
 
@@ -428,9 +431,9 @@ export async function generateScriptAction(formData: {
 
     if (!content) throw new Error("AI returned empty content.");
 
-    // Limpeza de segurança para remover qualquer "lixo" que a IA possa ter colocado
     content = content.trim();
 
+    // Gravar no Banco de Dados
     await Promise.all([
       db.collection("scripts").insertOne({
         userId: userId,
