@@ -33,8 +33,7 @@ export async function getUserProfile() {
 }
 
 /**
- * Gera roteiros virais profissionais (TikTok/Reels/Shorts).
- * Focado em retenção, segurança e linguagem de marketing.
+ * Gera roteiros virais de alta retenção (Short-form content expert).
  */
 export async function generateScriptAction(formData: { 
   topic: string, 
@@ -52,28 +51,27 @@ export async function generateScriptAction(formData: {
     const client = await clientPromise;
     const db = client.db("gentone");
 
-    // Verifica créditos
     const profile = await db.collection("profiles").findOne({ userId: userId });
     if (!profile || profile.credits <= 0) {
-      return { success: false, error: "Créditos insuficientes! Faz upgrade para continuar." };
+      return { success: false, error: "Créditos insuficientes!" };
     }
 
-    // SYSTEM PROMPT DE ELITE - GenTone Viral Engine
+    // SYSTEM PROMPT: SHORT-FORM RETENTION ENGINE
     const systemInstruction = `
-      You are GenTone, an Elite Viral Scriptwriter for Social Media (TikTok, Reels, YouTube Shorts).
-      Your mission is to turn any topic into a professional, high-retention video script.
+      You are GenTone, a Viral Growth Expert for TikTok, Reels, and Shorts. 
+      You don't write "stories" or "educational content"; you write "Retention Machines".
 
-      STRICT CONTENT PROTOCOLS:
-      1. THE HOOK (0-3s): Start with a "Pattern Interrupt". Never say "Hello". Use a provocative question, a bold claim, or a shocking result.
-      2. PROFESSIONAL NARRATION: Write for a Content Creator addressing an audience. Use punchy, high-energy marketing language. Avoid "baby talk" or childish tones, even for family topics.
-      3. SAFETY & LOGISTICS: Never suggest dangerous acts. Only suggest visuals a creator can film in a home studio (e.g., [Visual]: Close-up of hands, [Visual]: Pointing to text, [Visual]: Showing screen).
-      4. VIRAL STRUCTURE: 
-         - Hook (Attention)
-         - Core Value/Tips (Retention)
-         - Strong CTA (Engagement/Conversion)
-      5. FORMAT: Use [Visual]: and [Audio]: for every scene.
-      6. LANGUAGE: Write 100% in the language of the topic: "${formData.topic}".
-      7. TONE: Strictly follow the requested tone: "${formData.tone}".
+      STRICT SCRIPTWRITING RULES:
+      1. REAL-WORLD TIMING: The entire script MUST be under 60 seconds. Each scene is 3-5s max.
+      2. THE "KILLER" HOOK: Start with a result, a shock, or a curiosity gap. No greetings. 
+      3. PROFESSIONAL CREATOR TONE: Write for a pro influencer. No "baby talk", no "childish voices", even for family topics. Use punchy, high-energy language.
+      4. VISUAL DYNAMICS: Use only home-studio friendly cues: [Quick Cut], [Text Overlay], [POV], [Point to screen].
+      5. FORMAT: 
+         Scene 1 (0-3s) - [Visual]: / [Audio]:
+         Scene 2 (3-10s) - [Visual]: / [Audio]: 
+         (Continue with precise timing up to the requested duration).
+      6. SAFETY: Absolute zero tolerance for dangerous acts (e.g., kids near boiling water).
+      7. LANGUAGE: Write 100% in the language of the topic: "${formData.topic}".
     `;
 
     const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
@@ -88,13 +86,11 @@ export async function generateScriptAction(formData: {
           { role: "system", content: systemInstruction },
           { 
             role: "user", 
-            content: `Create a professional viral script about: "${formData.topic}". 
-            Target Audience: ${formData.targetAudience}. 
-            Estimated Duration: ${formData.duration}.` 
+            content: `Topic: "${formData.topic}". Tone: ${formData.tone}. Audience: ${formData.targetAudience}. Duration: ${formData.duration}.` 
           }
         ],
-        temperature: 0.65, // Reduzido para maior precisão e menos alucinação
-        max_tokens: 1600,
+        temperature: 0.6, // Foco total na estrutura e regras
+        max_tokens: 1200,
       })
     });
 
@@ -105,7 +101,7 @@ export async function generateScriptAction(formData: {
 
     if (!content) throw new Error("AI returned empty content.");
 
-    // Gravação e desconto de crédito (Atomic Operation)
+    // Gravar histórico e descontar crédito
     await Promise.all([
       db.collection("scripts").insertOne({
         userId: userId,
@@ -124,7 +120,7 @@ export async function generateScriptAction(formData: {
     return { success: true, content: content.trim() };
 
   } catch (error: any) {
-    console.error("LOG GENTONE [Generation Error]:", error.message);
-    return { success: false, error: "Falha na geração. Tenta novamente em instantes." };
+    console.error("LOG GENTONE Error:", error.message);
+    return { success: false, error: "Falha ao gerar roteiro profissional." };
   }
 }
