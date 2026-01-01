@@ -4,6 +4,9 @@ import clientPromise from "@/lib/mongodb";
 import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 
+/**
+ * Obtém ou cria o perfil do utilizador na coleção "profiles".
+ */
 export async function getUserProfile() {
   const { userId } = await auth();
   if (!userId) return { success: false, error: "Not authenticated." };
@@ -29,6 +32,10 @@ export async function getUserProfile() {
   }
 }
 
+/**
+ * Gera roteiros virais profissionais (TikTok/Reels/Shorts).
+ * Focado em retenção, segurança e linguagem de marketing.
+ */
 export async function generateScriptAction(formData: { 
   topic: string, 
   tone: string, 
@@ -45,26 +52,28 @@ export async function generateScriptAction(formData: {
     const client = await clientPromise;
     const db = client.db("gentone");
 
+    // Verifica créditos
     const profile = await db.collection("profiles").findOne({ userId: userId });
     if (!profile || profile.credits <= 0) {
-      return { success: false, error: "Créditos insuficientes!" };
+      return { success: false, error: "Créditos insuficientes! Faz upgrade para continuar." };
     }
 
-    // PROMPT REFORMULADO: AGORA É UM ESPECIALISTA EM MARKETING VIRAL
+    // SYSTEM PROMPT DE ELITE - GenTone Viral Engine
     const systemInstruction = `
-      You are GenTone, an Elite Viral Scriptwriter for Social Media (TikTok/Reels/Shorts).
-      Your goal is to provide high-value, professional, and safe content for creators.
+      You are GenTone, an Elite Viral Scriptwriter for Social Media (TikTok, Reels, YouTube Shorts).
+      Your mission is to turn any topic into a professional, high-retention video script.
 
-      STRICT CONTENT PROTOCOL:
-      1. SAFETY FIRST: Never suggest dangerous activities (e.g., kids near boiling water). If a topic involves kids, pivot to safe, creative alternatives (like a "Babyccino" or "Fake Coffee").
-      2. VIRAL ARCHITECTURE: 
-         - Start with a "Pattern Interrupt" Hook (First 3 seconds).
-         - Deliver 3 punchy value points.
-         - End with a strategic CTA (Call to Action).
-      3. VISUALS: Realistic for home studios. No complex scene descriptions. Use [Visual]: [Audio]: format.
-      4. TONE: Avoid "childish" narration. Even for fun topics, be professional and authoritative.
-      5. NO FLUFF: No "Hello friends". Go straight to the hook.
-      6. LANGUAGE: 100% in the language of the topic: "${formData.topic}".
+      STRICT CONTENT PROTOCOLS:
+      1. THE HOOK (0-3s): Start with a "Pattern Interrupt". Never say "Hello". Use a provocative question, a bold claim, or a shocking result.
+      2. PROFESSIONAL NARRATION: Write for a Content Creator addressing an audience. Use punchy, high-energy marketing language. Avoid "baby talk" or childish tones, even for family topics.
+      3. SAFETY & LOGISTICS: Never suggest dangerous acts. Only suggest visuals a creator can film in a home studio (e.g., [Visual]: Close-up of hands, [Visual]: Pointing to text, [Visual]: Showing screen).
+      4. VIRAL STRUCTURE: 
+         - Hook (Attention)
+         - Core Value/Tips (Retention)
+         - Strong CTA (Engagement/Conversion)
+      5. FORMAT: Use [Visual]: and [Audio]: for every scene.
+      6. LANGUAGE: Write 100% in the language of the topic: "${formData.topic}".
+      7. TONE: Strictly follow the requested tone: "${formData.tone}".
     `;
 
     const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
@@ -79,10 +88,13 @@ export async function generateScriptAction(formData: {
           { role: "system", content: systemInstruction },
           { 
             role: "user", 
-            content: `Topic: "${formData.topic}". Tone: ${formData.tone}. Audience: ${formData.targetAudience}. Duration: ${formData.duration}.` 
+            content: `Create a professional viral script about: "${formData.topic}". 
+            Target Audience: ${formData.targetAudience}. 
+            Estimated Duration: ${formData.duration}.` 
           }
         ],
-        temperature: 0.6, // Temperatura mais baixa = Mais foco e menos "invenção"
+        temperature: 0.65, // Reduzido para maior precisão e menos alucinação
+        max_tokens: 1600,
       })
     });
 
@@ -93,6 +105,7 @@ export async function generateScriptAction(formData: {
 
     if (!content) throw new Error("AI returned empty content.");
 
+    // Gravação e desconto de crédito (Atomic Operation)
     await Promise.all([
       db.collection("scripts").insertOne({
         userId: userId,
@@ -111,7 +124,7 @@ export async function generateScriptAction(formData: {
     return { success: true, content: content.trim() };
 
   } catch (error: any) {
-    console.error("LOG GENTONE Error:", error.message);
-    return { success: false, error: "Failed to generate script." };
+    console.error("LOG GENTONE [Generation Error]:", error.message);
+    return { success: false, error: "Falha na geração. Tenta novamente em instantes." };
   }
 }
