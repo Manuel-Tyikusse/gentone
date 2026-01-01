@@ -453,7 +453,7 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(false);
   const [script, setScript] = useState("");
   const [statusMessage, setStatusMessage] = useState("");
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Para mobile menu
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   useEffect(() => {
     async function loadData() {
@@ -502,144 +502,140 @@ export default function DashboardPage() {
   const hasNoCredits = credits !== null && credits <= 0;
 
   return (
-    <div className="dashboard-container">
+    <div className="dashboard-layout">
       
-      {/* Mobile Header (Apenas visível em telemóveis) */}
-      <div className="mobile-header">
-        <h2 style={{ color: '#3b82f6', fontSize: '1.2rem', fontWeight: 'bold', margin: 0 }}>GenTone</h2>
-        <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} style={{ background: 'none', border: 'none', color: 'white' }}>
+      {/* Mobile Header */}
+      <header className="mobile-header">
+        <span className="logo-text">GenTone</span>
+        <button className="menu-toggle" onClick={() => setIsSidebarOpen(!isSidebarOpen)}>
           {isSidebarOpen ? <X size={24} /> : <Menu size={24} />}
         </button>
-      </div>
+      </header>
 
-      {/* Sidebar */}
-      <aside className={`sidebar ${isSidebarOpen ? 'open' : ''}`}>
-        <h2 className="sidebar-logo">GenTone</h2>
-        
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '10px' }}>
-          <UserButton afterSignOutUrl="/" />
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <span style={{ fontSize: '0.85rem', color: '#f1f5f9', fontWeight: 'bold' }}>{user?.firstName || "Creator"}</span>
-            <span style={{ fontSize: '0.7rem', color: '#64748b' }}>{credits !== null && credits > 10 ? "Pro Plan" : "Free Plan"}</span>
+      {/* Sidebar - Fixa na esquerda no Desktop */}
+      <aside className={`sidebar-container ${isSidebarOpen ? 'show' : ''}`}>
+        <div className="sidebar-inner">
+          <div className="sidebar-top">
+            <h2 className="sidebar-logo">GenTone</h2>
+            
+            <nav className="nav-links">
+              <div className="credits-display">
+                <span className="label">CREDITS</span>
+                <span className="value">{credits ?? '0'}</span>
+                <Link href="/dashboard/pricing" className="btn-upgrade">
+                  <Zap size={14} fill="currentColor" /> Upgrade
+                </Link>
+              </div>
+
+              <Link href="/dashboard/history" className="nav-item">
+                <History size={18} /> <span>History</span>
+              </Link>
+            </nav>
+          </div>
+
+          <div className="sidebar-bottom">
+            <div className="profile-card">
+              <UserButton afterSignOutUrl="/" />
+              <div className="profile-info">
+                <p className="profile-name">{user?.firstName || "Creator"}</p>
+                <p className="profile-status">{credits !== null && credits > 10 ? "Pro Plan" : "Free Plan"}</p>
+              </div>
+            </div>
           </div>
         </div>
-
-        <nav style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          <div style={{ padding: '15px', background: 'rgba(59, 130, 246, 0.1)', borderRadius: '12px', border: '1px solid rgba(59, 130, 246, 0.2)' }}>
-            <p style={{ fontSize: '0.65rem', color: '#60a5fa', textTransform: 'uppercase', fontWeight: 'bold', letterSpacing: '0.05em', margin: 0 }}>Available Credits</p>
-            <p style={{ fontSize: '1.6rem', fontWeight: 'bold', color: 'white', margin: '4px 0' }}>{credits ?? '0'}</p>
-            
-            <Link href="/dashboard/pricing" style={{ 
-              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-              marginTop: '10px', padding: '10px', background: '#2563eb', borderRadius: '8px',
-              color: 'white', textDecoration: 'none', fontSize: '0.8rem', fontWeight: 'bold'
-            }}>
-              <Zap size={14} fill="currentColor" /> Upgrade
-            </Link>
-          </div>
-
-          <Link href="/dashboard/history" style={{ 
-            display: 'flex', alignItems: 'center', gap: '10px', color: '#e2e8f0', textDecoration: 'none',
-            padding: '12px', borderRadius: '10px', background: '#0f172a', fontSize: '0.9rem', border: '1px solid #1e293b'
-          }}>
-            <History size={18} color="#60a5fa" /> History
-          </Link>
-        </nav>
       </aside>
 
-      {/* Main Content */}
+      {/* Conteúdo Principal */}
       <main className="main-content">
-        <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+        <div className="content-container">
           
-          <div className="welcome-section">
-            <h1 style={{ fontSize: 'clamp(1.5rem, 5vw, 2.2rem)', fontWeight: 'bold', marginBottom: '8px' }}>
-              Welcome, {user?.firstName || "Creator"}! 👋
-            </h1>
-            <p style={{ color: '#94a3b8', fontSize: 'clamp(0.9rem, 3vw, 1.1rem)' }}>
-              What kind of magic are we scripting today?
-            </p>
+          <div className="header-section">
+            <h1 className="welcome-title">Welcome, {user?.firstName || "Creator"}! 👋</h1>
+            <p className="welcome-subtitle">What kind of magic are we scripting today?</p>
           </div>
           
-          <form onSubmit={handleGenerate} className="glass-form">
-            <h2 style={{marginBottom: '20px', fontSize: '1.1rem', color: '#f1f5f9'}}>Script Configuration</h2>
+          <form onSubmit={handleGenerate} className="main-form">
+            <h2 className="form-header">Script Configuration</h2>
             
-            <div className="input-group">
-              <label>Video Topic</label>
-              <input name="topic" required placeholder="Ex: 5 healthy habits for morning routines" />
-            </div>
+            <div className="form-grid">
+              <div className="field">
+                <label>Video Topic</label>
+                <input name="topic" required placeholder="Ex: 5 healthy habits for morning routines" />
+              </div>
 
-            <div className="input-group">
-              <label>Target Audience</label>
-              <input name="targetAudience" required placeholder="Ex: Busy professionals..." />
-            </div>
-            
-            <div className="input-group">
-              <label>Tone of Voice</label>
-              <select name="tone">
-                <optgroup label="Standard & Professional" style={{ background: '#0f172a' }}>
-                  <option value="Professional">👔 Professional & Formal</option>
-                  <option value="Conversational">💬 Conversational (Friendly)</option>
-                  <option value="Informative">💡 Clear & Informative</option>
-                  <option value="Authoritative">⚖️ Authoritative & Expert</option>
-                </optgroup>
-                <optgroup label="Engagement & Hype" style={{ background: '#0f172a' }}>
-                  <option value="High Energy">🔥 High Energy / Hype</option>
-                  <option value="Motivational">🚀 Motivational & Inspiring</option>
-                  <option value="Persuasive">🎯 Sales & Persuasive (VSL)</option>
-                  <option value="Urgent">🚨 Urgent / Breaking News</option>
-                  <option value="Trendy">✨ Gen-Z / Trendy Slang</option>
-                </optgroup>
-                <optgroup label="Entertainment & Storytelling" style={{ background: '#0f172a' }}>
-                  <option value="Funny">😂 Funny & Humorous</option>
-                  <option value="Storytelling">📖 Narrative Storytelling</option>
-                  <option value="Dramatic">🎭 Intense & Dramatic</option>
-                  <option value="Suspenseful">🕵️‍♂️ Mystery & Suspense</option>
-                  <option value="Sarcastic">😏 Sarcastic & Witty</option>
-                </optgroup>
-                <optgroup label="Premium & Niche" style={{ background: '#0f172a' }}>
-                  <option value="Luxury">💎 Elegant & Luxury</option>
-                  <option value="Minimalist">☁️ Clean & Minimalist</option>
-                  <option value="Educational">🎓 Academic & Deep Dive</option>
-                  <option value="Direct">⚡ Direct & No-Nonsense</option>
-                </optgroup>
-              </select>
-            </div>
+              <div className="field">
+                <label>Target Audience</label>
+                <input name="targetAudience" required placeholder="Ex: Busy professionals..." />
+              </div>
 
-            <div className="input-group" style={{ marginBottom: '25px' }}>
-              <label>Duration</label>
-              <select name="duration">
-                <option value="30 seconds">📱 30 seconds</option>
-                <option value="60 seconds">🎥 60 seconds</option>
-                <option value="2 minutes">🎥 2 minutes</option>
-                <option value="5 minutes">🎥 5 minutes</option>
-                <option value="10 minutes">🎥 10 minutes</option>
-              </select>
+              <div className="field">
+                <label>Tone of Voice</label>
+                <select name="tone" required>
+                  <optgroup label="Standard & Professional">
+                    <option value="Professional">Professional & Formal</option>
+                    <option value="Conversational">Conversational (Friendly)</option>
+                    <option value="Informative">Clear & Informative</option>
+                    <option value="Authoritative">Authoritative & Expert</option>
+                  </optgroup>
+                  <optgroup label="Engagement & Hype">
+                    <option value="High Energy">High Energy / Hype</option>
+                    <option value="Motivational">Motivational & Inspiring</option>
+                    <option value="Persuasive">Sales & Persuasive (VSL)</option>
+                    <option value="Urgent">Urgent / Breaking News</option>
+                    <option value="Trendy">Gen-Z / Trendy Slang</option>
+                  </optgroup>
+                  <optgroup label="Entertainment & Storytelling">
+                    <option value="Funny">Funny & Humorous</option>
+                    <option value="Storytelling">Narrative Storytelling</option>
+                    <option value="Dramatic">Intense & Dramatic</option>
+                    <option value="Suspenseful">Mystery & Suspense</option>
+                    <option value="Sarcastic">Sarcastic & Witty</option>
+                  </optgroup>
+                  <optgroup label="Premium & Niche">
+                    <option value="Luxury">Elegant & Luxury</option>
+                    <option value="Minimalist">Clean & Minimalist</option>
+                    <option value="Educational">Academic & Deep Dive</option>
+                    <option value="Direct">Direct & No-Nonsense</option>
+                  </optgroup>
+                </select>
+              </div>
+
+              <div className="field">
+                <label>Duration</label>
+                <select name="duration" required>
+                  <option value="30 seconds">30 seconds</option>
+                  <option value="60 seconds">60 seconds</option>
+                  <option value="2 minutes">2 minutes</option>
+                  <option value="5 minutes">5 minutes</option>
+                  <option value="10 minutes">10 minutes</option>
+                </select>
+              </div>
             </div>
 
             <button 
               type="submit" 
               disabled={loading || hasNoCredits} 
-              className="generate-btn"
-              style={{ background: hasNoCredits ? '#1e293b' : '#2563eb', cursor: hasNoCredits ? 'not-allowed' : 'pointer' }}
+              className="btn-generate"
+              style={{ background: hasNoCredits ? '#1e293b' : '#2563eb' }}
             >
-              {loading ? <Loader2 className="spin" /> : hasNoCredits ? "No Credits Left" : <><Sparkles size={18}/> Generate Script</>}
+              {loading ? <Loader2 className="animate-spin" /> : hasNoCredits ? "No Credits Left" : <><Sparkles size={18}/> Generate Script</>}
             </button>
           </form>
 
           {statusMessage && (
-            <div className={`status-box ${hasNoCredits ? 'error' : ''}`}>
-              <AlertCircle size={18} /> {statusMessage}
-              {hasNoCredits && <Link href="/dashboard/pricing" style={{ color: '#ef4444', fontWeight: 'bold', marginLeft: 'auto' }}>Get Credits</Link>}
+            <div className={`alert-box ${hasNoCredits ? 'alert-error' : ''}`}>
+              <AlertCircle size={18} /> <span>{statusMessage}</span>
+              {hasNoCredits && <Link href="/dashboard/pricing" className="get-credits-link">Get Credits</Link>}
             </div>
           )}
 
           {script && (
-            <div className="script-result">
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '10px' }}>
-                <h3 style={{ color: '#60a5fa', fontWeight: 'bold', margin: 0, fontSize: '1rem' }}>✨ Generated Script:</h3>
+            <div className="script-output">
+              <div className="output-header">
+                <h3>✨ Generated Script:</h3>
                 <CopyButton text={script} />
               </div>
-              <div className="markdown-container">
+              <div className="markdown-body">
                 <ReactMarkdown>{script}</ReactMarkdown>
               </div>
             </div>
@@ -647,44 +643,204 @@ export default function DashboardPage() {
         </div>
       </main>
 
-      {/* ESTILOS RESPONSIVOS */}
       <style dangerouslySetInnerHTML={{ __html: `
-        .dashboard-container { display: flex; min-height: 100vh; background: #020617; color: white; font-family: sans-serif; }
-        .sidebar { width: 280px; border-right: 1px solid #1e293b; padding: 30px; display: flex; flexDirection: column; gap: 25px; transition: 0.3s; background: #020617; z-index: 100; }
-        .sidebar-logo { color: #3b82f6; font-size: 1.5rem; font-weight: bold; margin-bottom: 10px; }
-        .main-content { flex: 1; padding: 40px; overflow-y: auto; width: 100%; }
-        .mobile-header { display: none; padding: 15px 20px; border-bottom: 1px solid #1e293b; align-items: center; justify-content: space-between; background: #0f172a; position: sticky; top: 0; z-index: 110; }
-        
-        .glass-form { background: #0f172a; padding: 30px; border-radius: 16px; border: 1px solid #1e293b; }
-        .input-group { margin-bottom: 15px; }
-        .input-group label { font-size: 0.8rem; color: #64748b; display: block; margin-bottom: 5px; }
-        .input-group input, .input-group select { width: 100%; padding: 12px; border-radius: 8px; background: #020617; border: 1px solid #334155; color: white; font-size: 16px; }
-        
-        .generate-btn { width: 100%; padding: 16px; color: white; border-radius: 8px; border: none; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.2s; }
-        .generate-btn:hover { opacity: 0.9; }
-        
-        .status-box { margin-top: 20px; padding: 15px; background: #1e293b; border-radius: 8px; color: #94a3b8; display: flex; align-items: center; gap: 10px; font-size: 0.9rem; }
-        .status-box.error { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); }
-        
-        .script-result { marginTop: 40px; background: #0f172a; padding: clamp(15px, 4vw, 30px); border-radius: 16px; border: 1px solid #3b82f6; }
-        .markdown-container { color: #e2e8f0; background: #020617; padding: 20px; border-radius: 12px; border: 1px solid #1e293b; overflow-x: auto; }
-        
-        .spin { animation: spin 1s linear infinite; }
+        :root {
+          --sidebar-width: 280px;
+          --bg-main: #020617;
+          --bg-card: #0f172a;
+          --accent: #2563eb;
+          --border: #1e293b;
+        }
+
+        .dashboard-layout {
+          display: flex;
+          height: 100vh;
+          width: 100vw;
+          background: var(--bg-main);
+          color: white;
+          font-family: 'Inter', sans-serif;
+          overflow: hidden;
+        }
+
+        /* SIDEBAR */
+        .sidebar-container {
+          width: var(--sidebar-width);
+          border-right: 1px solid var(--border);
+          flex-shrink: 0;
+          background: var(--bg-main);
+          z-index: 100;
+        }
+
+        .sidebar-inner {
+          display: flex;
+          flex-direction: column;
+          justify-content: space-between;
+          height: 100%;
+          padding: 24px;
+        }
+
+        .sidebar-logo { color: #3b82f6; font-size: 1.5rem; font-weight: bold; margin-bottom: 30px; }
+
+        .credits-display {
+          background: rgba(37, 99, 235, 0.08);
+          border: 1px solid rgba(37, 99, 235, 0.2);
+          border-radius: 16px;
+          padding: 20px;
+          margin-bottom: 20px;
+        }
+
+        .credits-display .label { font-size: 0.65rem; color: #60a5fa; font-weight: 800; letter-spacing: 0.05em; }
+        .credits-display .value { font-size: 2rem; font-weight: bold; display: block; margin: 5px 0 12px 0; }
+
+        .btn-upgrade {
+          background: var(--accent);
+          color: white;
+          text-decoration: none;
+          padding: 10px;
+          border-radius: 8px;
+          font-size: 0.85rem;
+          font-weight: bold;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+          transition: 0.2s;
+        }
+        .btn-upgrade:hover { opacity: 0.9; transform: translateY(-1px); }
+
+        .nav-item {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 12px;
+          background: var(--bg-card);
+          border: 1px solid var(--border);
+          border-radius: 12px;
+          color: #cbd5e1;
+          text-decoration: none;
+          font-size: 0.9rem;
+        }
+
+        .profile-card {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 15px;
+          background: rgba(255,255,255,0.03);
+          border-radius: 16px;
+        }
+
+        .profile-info { overflow: hidden; }
+        .profile-name { font-size: 0.85rem; font-weight: 600; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .profile-status { font-size: 0.7rem; color: #64748b; margin: 0; }
+
+        /* MAIN CONTENT */
+        .main-content {
+          flex: 1;
+          overflow-y: auto;
+          padding: 60px 40px;
+          background: radial-gradient(circle at top right, rgba(37, 99, 235, 0.05), transparent);
+        }
+
+        .content-container { max-width: 850px; margin: 0 auto; }
+
+        .welcome-title { font-size: 2.2rem; font-weight: 800; margin-bottom: 10px; }
+        .welcome-subtitle { color: #94a3b8; font-size: 1.1rem; margin-bottom: 40px; }
+
+        .main-form {
+          background: var(--bg-card);
+          border: 1px solid var(--border);
+          padding: 35px;
+          border-radius: 24px;
+          box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .form-header { font-size: 1.2rem; margin-bottom: 25px; color: #f1f5f9; font-weight: 600; }
+
+        .form-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 25px;
+          margin-bottom: 30px;
+        }
+
+        .field label { display: block; font-size: 0.85rem; color: #64748b; margin-bottom: 10px; font-weight: 500; }
+        .field input, .field select {
+          width: 100%;
+          background: var(--bg-main);
+          border: 1px solid var(--border);
+          padding: 14px;
+          border-radius: 12px;
+          color: white;
+          font-size: 0.95rem;
+          transition: border-color 0.2s;
+        }
+        .field input:focus, .field select:focus { border-color: var(--accent); outline: none; }
+
+        .btn-generate {
+          width: 100%;
+          color: white;
+          border: none;
+          padding: 18px;
+          border-radius: 12px;
+          font-size: 1rem;
+          font-weight: bold;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 12px;
+          cursor: pointer;
+          transition: 0.2s;
+        }
+
+        .alert-box {
+          margin-top: 25px; padding: 16px 20px; background: var(--border);
+          border-radius: 12px; display: flex; align-items: center; gap: 12px; font-size: 0.9rem;
+        }
+        .alert-error { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); }
+        .get-credits-link { margin-left: auto; font-weight: bold; color: #ef4444; text-decoration: none; }
+
+        .script-output {
+          margin-top: 40px;
+          background: var(--bg-card);
+          padding: 30px;
+          border-radius: 24px;
+          border: 1px solid var(--accent);
+        }
+
+        .output-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .markdown-body {
+          background: var(--bg-main);
+          padding: 25px;
+          border-radius: 16px;
+          line-height: 1.7;
+          color: #e2e8f0;
+          border: 1px solid var(--border);
+        }
+
+        .mobile-header { display: none; }
+        .animate-spin { animation: spin 1s linear infinite; }
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
-        /* MEDIA QUERIES PARA MOBILE */
+        /* RESPONSIVIDADE */
+        @media (max-width: 1024px) {
+          .form-grid { grid-template-columns: 1fr; }
+        }
+
         @media (max-width: 768px) {
-          .dashboard-container { flex-direction: column; }
-          .sidebar { 
-            position: fixed; left: -100%; top: 56px; height: calc(100vh - 56px); 
-            width: 100%; border: none; padding: 20px;
+          .dashboard-layout { flex-direction: column; overflow: hidden; }
+          .sidebar-container {
+            position: fixed; left: 0; top: 60px; height: calc(100vh - 60px);
+            width: 100%; transform: translateX(-100%); transition: transform 0.3s ease;
           }
-          .sidebar.open { left: 0; }
-          .sidebar-logo { display: none; }
-          .mobile-header { display: flex; }
-          .main-content { padding: 20px; }
-          .welcome-section { margin-bottom: 30px; }
-          .glass-form { padding: 20px; }
+          .sidebar-container.show { transform: translateX(0); }
+          .mobile-header {
+            display: flex; height: 60px; padding: 0 20px; align-items: center;
+            justify-content: space-between; background: var(--bg-card);
+            border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 110;
+          }
+          .main-content { padding: 30px 20px; overflow-y: auto; }
+          .main-form { padding: 25px; }
         }
       `}} />
     </div>

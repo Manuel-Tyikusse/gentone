@@ -4,11 +4,11 @@ import crypto from "crypto";
 
 export async function POST(req: Request) {
   try {
-    // 1. Validar a Assinatura (Segurança Máxima)
+    // 1. Validar a Assinatura (Segurança contra invasores)
     const rawBody = await req.text();
     const hmac = crypto.createHmac(
       "sha256",
-      process.env.LEMON_SQUEEZY_WEBHOOK_SECRET! // Tu defines esta chave no painel do Lemon e no .env
+      process.env.LEMON_SQUEEZY_WEBHOOK_SECRET!
     );
     const digest = Buffer.from(hmac.update(rawBody).digest("hex"), "utf8");
     const signature = Buffer.from(req.headers.get("x-signature") || "", "utf8");
@@ -21,45 +21,51 @@ export async function POST(req: Request) {
     const eventName = body.meta.event_name;
     const userEmail = body.data.attributes.user_email;
     const variantId = body.data.attributes.variant_id.toString();
-    const orderId = body.data.id; // ID único da ordem
+    const orderId = body.data.id; // ID único da transação
 
-    // 2. Só processamos se o evento for de ordem criada
-    if (eventName === "order_created") {
+    // 2. Processar eventos de pagamento (Ordem criada ou Subscrição ativada)
+    if (eventName === "order_created" || eventName === "subscription_created") {
       const client = await clientPromise;
       const db = client.db("gentone");
 
-      // 3. Mapeamento de Variant IDs (Substitui pelos IDs reais do teu painel Lemon Squeezy)
-      const creditMapping: { [key: string]: number } = {
-        "555001": 10,  // Starter
-        "555002": 50,  // Pro ($29)
-        "555003": 200, // Elite
+      // 3. Mapeamento com os teus IDs REAIS
+      const creditMapping: { [key: string]: { credits: number; name: string } } = {
+        "1183115": { credits: 15, name: "Starter" },
+        "1183117": { credits: 50, name: "Pro" },
+        "1183119": { credits: 200, name: "Elite" },
       };
 
-      const creditsToAdd = creditMapping[variantId] || 0;
+      const planInfo = creditMapping[variantId];
 
-      if (creditsToAdd > 0) {
-        // 4. Atualização Atómica e Anti-Duplicação
-        // Usamos o orderId para garantir que não processamos a mesma compra duas vezes
+      if (planInfo) {
+        // 4. Atualização no MongoDB com Anti-Duplicação (usando processedOrders)
         const result = await db.collection("users").updateOne(
           { 
             email: userEmail, 
-            processedOrders: { $ne: orderId } // Só atualiza se o orderId não estiver na lista
+            processedOrders: { $ne: orderId } // Garante que não processamos o mesmo pagamento 2 vezes
           },
           { 
-            $inc: { credits: creditsToAdd },
-            $push: { processedOrders: orderId as never } // Regista a ordem como processada
+            $inc: { credits: planInfo.credits },
+            $push: { processedOrders: orderId as never },
+            $set: { 
+              plan: planInfo.name,
+              lastBillingDate: new Date(),
+              isPro: true 
+            }
           }
         );
 
-        if (result.modifiedCount === 0) {
-          console.log(`Order ${orderId} already processed or user not found.`);
+        if (result.matchedCount === 0) {
+          console.warn(`⚠️ Webhook: Utilizador ${userEmail} não encontrado no banco de dados.`);
+        } else {
+          console.log(`✅ Sucesso: ${planInfo.credits} créditos adicionados a ${userEmail}`);
         }
       }
     }
 
-    return NextResponse.json({ message: "Webhook processed" });
+    return NextResponse.json({ message: "Webhook processed successfully" });
   } catch (err: any) {
-    console.error("Webhook Error:", err.message);
+    console.error("❌ Webhook Error:", err.message);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }
