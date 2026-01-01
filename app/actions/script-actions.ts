@@ -380,20 +380,17 @@ export async function generateScriptAction(formData: {
       return { success: false, error: "Insufficient credits. Please upgrade." };
     }
 
-    // SYSTEM INSTRUCTION MELHORADA
+    // --- NOVA LÓGICA DE PROMPT INFALÍVEL ---
     const systemInstruction = `
-      You are GenTone, a professional video scriptwriter.
+      You are GenTone, a professional video scriptwriter for TikTok and YouTube.
       
-      STRICT RULES:
-      1. LANGUAGE: You MUST identify the language of the USER TOPIC and write the ENTIRE script in that same language.
-      2. NO TALK: Do not provide intros like "Here is your script" or "I detected you speak...". Do not add notes at the end.
-      3. OUTPUT: Return ONLY the script content formatted in clean Markdown.
-      4. STRUCTURE: Include a catchy Title, an Intro (with timestamps), Scene breakdowns, and a Call to Action (CTA).
-      
-      CONTEXT:
-      - Tone: ${formData.tone}
-      - Estimated Duration: ${formData.duration}
-      - Target Audience: ${formData.targetAudience}
+      STRICT OPERATING INSTRUCTIONS:
+      1. OUTPUT LANGUAGE: You must write the script in the SAME LANGUAGE as the user's input topic.
+      2. IF THE TOPIC IS IN PORTUGUESE, RESPOND IN PORTUGUESE.
+      3. IF THE TOPIC IS IN ENGLISH, RESPOND IN ENGLISH.
+      4. DO NOT use Spanish unless the topic is specifically in Spanish.
+      5. NO CONVERSATION: Do not say "Claro", "Sure", "Aquí tienes". Output ONLY the script content.
+      6. FORMAT: Use professional Markdown with: Title, Introduction, Body Scenes, and a strong Call to Action.
     `;
 
     const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
@@ -408,14 +405,16 @@ export async function generateScriptAction(formData: {
           { role: "system", content: systemInstruction },
           { 
             role: "user", 
-            content: `Topic to write about: "${formData.topic}"` 
+            content: `TASK: Write a video script.
+            USER TOPIC: "${formData.topic}"
+            TONE: ${formData.tone}
+            TARGET AUDIENCE: ${formData.targetAudience}
+            DURATION: ${formData.duration}
+            
+            REMEMBER: Use the language of the TOPIC provided above.` 
           }
         ],
-        temperature: 0.5, // Ajustado para manter criatividade sem perder a obediência
-        max_tokens: 2048,
-        top_p: 1,
-        stream: false,
-        stop: null
+        temperature: 0.6, // Temperatura equilibrada para melhor qualidade de roteiro
       })
     });
 
@@ -429,7 +428,7 @@ export async function generateScriptAction(formData: {
 
     if (!content) throw new Error("AI returned empty content.");
 
-    // Limpeza extra para garantir que não venham textos explicativos antes do Markdown
+    // Limpeza de segurança para remover qualquer "lixo" que a IA possa ter colocado
     content = content.trim();
 
     await Promise.all([
@@ -451,7 +450,6 @@ export async function generateScriptAction(formData: {
     ]);
 
     revalidatePath("/dashboard");
-
     return { success: true, content };
 
   } catch (error: any) {
