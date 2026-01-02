@@ -39,7 +39,7 @@ export default function CookiesPage() {
           <div style={{ marginTop: '20px' }}>
             <h3 style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>B. Functional & Payment Cookies</h3>
             <p>
-              These cookies are used to enhance the performance and functionality of our Website but are non-essential to its use. However, without these cookies, certain functionality like payments via <strong>Lemon Squeezy</strong> may become unavailable. These cookies help track your checkout progress and prevent fraudulent transactions.
+              These cookies are used to enhance the performance and functionality of our Website but are non-essential to its use. However, without these cookies, certain functionality like payments via <strong>Dodo Payments</strong> may become unavailable. These cookies help track your checkout progress and prevent fraudulent transactions.
             </p>
           </div>
 
@@ -56,7 +56,7 @@ export default function CookiesPage() {
           <p>In addition to our own cookies, the following third parties may place cookies on your computer:</p>
           <ul style={{ marginLeft: '20px' }}>
             <li><strong>Clerk:</strong> For session management and secure login (clerk.com).</li>
-            <li><strong>Lemon Squeezy:</strong> For processing payments and VAT compliance (lemonsqueezy.com).</li>
+            <li><strong>Dodo Payments:</strong> For processing payments and VAT compliance (dodopayments.com).</li>
             <li><strong>Vercel:</strong> For traffic analysis and platform stability (vercel.com).</li>
           </ul>
         </section>
@@ -85,7 +85,7 @@ export default function CookiesPage() {
         </section>
 
         <footer style={{ marginTop: '60px', borderTop: '1px solid #eee', paddingTop: '20px', color: '#999', fontSize: '0.9rem' }}>
-          <p>For further information on our cookie usage, please contact us at compliance@gentone.ink</p>
+          <p>For further information on our cookie usage, please contact us at gentone.ai.help@gmail.com</p>
         </footer>
       </div>
     </main>

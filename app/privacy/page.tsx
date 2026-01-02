@@ -21,7 +21,7 @@ export default function PrivacyPage() {
             <li><strong>Account Information:</strong> When you register via <strong>Clerk</strong>, we collect your unique user ID, full name, and email address.</li>
             <li><strong>Input Data:</strong> We store the topics, target audiences, and configurations you provide to generate scripts.</li>
             <li><strong>Technical Data:</strong> Our servers automatically log your IP address, browser type, device information, and timestamps of access via standard log files.</li>
-            <li><strong>Transaction Data:</strong> All financial transactions are processed by <strong>Lemon Squeezy</strong>. We receive confirmation of payment but never handle or store raw credit card data or bank details.</li>
+            <li><strong>Transaction Data:</strong> All financial transactions are processed by <strong>Dodo Payments</strong>. We receive confirmation of payment but never handle or store raw credit card data or bank details.</li>
           </ul>
         </section>
 
@@ -78,9 +78,9 @@ export default function PrivacyPage() {
                 <td style={{ padding: '10px' }}>clerk.com/privacy</td>
               </tr>
               <tr style={{ borderBottom: '1px solid #eee' }}>
-                <td style={{ padding: '10px' }}>Lemon Squeezy</td>
+                <td style={{ padding: '10px' }}>Dodo Payments</td>
                 <td style={{ padding: '10px' }}>Billing & VAT Compliance</td>
-                <td style={{ padding: '10px' }}>lemonsqueezy.com/privacy</td>
+                <td style={{ padding: '10px' }}>dodopayments.com/privacy</td>
               </tr>
               <tr style={{ borderBottom: '1px solid #eee' }}>
                 <td style={{ padding: '10px' }}>Groq</td>
@@ -105,7 +105,7 @@ export default function PrivacyPage() {
         </section>
 
         <footer style={{ marginTop: '60px', borderTop: '1px solid #eee', paddingTop: '20px', color: '#999', fontSize: '0.9rem' }}>
-          <p>If you have additional questions or require more information about our Privacy Policy, do not hesitate to contact our Data Protection Officer at privacy@gentone.ink</p>
+          <p>If you have additional questions or require more information about our Privacy Policy, do not hesitate to contact our Data Protection Officer at gentone.vercel.app</p>
         </footer>
       </div>
     </main>

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Zap, DollarSign, Users, BarChart3, ArrowRight, Globe, ShieldCheck } from "lucide-react";
 
 export default function AffiliatesPage() {
-  const signupLink = "https://nedra.lemonsqueezy.com/affiliates";
+  const signupLink = "notavailable_at_the_moment";
 
   return (
     <div style={{ minHeight: '100vh', background: '#020617', color: 'white', fontFamily: 'sans-serif' }}>
@@ -75,7 +75,7 @@ export default function AffiliatesPage() {
             <span className="step-circle">1</span>
             <div>
               <h4>Sign Up</h4>
-              <p>Register via Lemon Squeezy. It takes less than 2 minutes to get approved.</p>
+              <p>Register via Dodo Payments. It takes less than 5 minutes to get approved.</p>
             </div>
           </div>
 
