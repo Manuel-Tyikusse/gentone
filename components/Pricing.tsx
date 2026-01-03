@@ -34,27 +34,37 @@
 
 import { Check, Zap, Rocket, Crown } from "lucide-react";
 import { useUser } from "@clerk/nextjs";
+import { useRouter } from "next/navigation";
 
 export default function PricingSection() {
-  const { user, isLoaded } = useUser();
-  const userId = user?.id; // O ID real que está no teu MongoDB Atlas
+  const { user, isLoaded, isSignedIn } = useUser();
+  const userId = user?.id; 
+  const router = useRouter();
 
   // Função para gerar o link da loja com metadados e redirecionamento forçado
   const getStoreUrl = (credits: string) => {
     const baseUrl = "https://store.dodopayments.com/gentone";
     
-    if (!isLoaded || !userId) return baseUrl;
+    // Se não estiver logado, não geramos o link real ainda (o onClick resolve isso)
+    if (!isLoaded || !userId) return "#";
     
-    // URL da página de sucesso que criámos
     const successUrl = "https://gentone.vercel.app/dashboard/success";
     
     const params = new URLSearchParams({
-      "metadata[user_id]": userId,      // Para o Webhook atualizar o perfil certo
+      "metadata[user_id]": userId,      // Para o Webhook atualizar o perfil
       "metadata[credits]": credits,     // Para o Webhook saber quanto adicionar
-      "redirect_url": successUrl        // Força o Dodo a voltar para o GenTone após pagar
+      "redirect_url": successUrl        // Força o retorno ao GenTone
     });
     
     return `${baseUrl}?${params.toString()}`;
+  };
+
+  // Lógica de proteção: Se não estiver logado, manda para o Sign-in
+  const handlePurchase = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    if (!isSignedIn) {
+      e.preventDefault();
+      router.push("/sign-in");
+    }
   };
 
   const plans = [
@@ -111,7 +121,6 @@ export default function PricingSection() {
                 borderRadius: '24px',
                 border: plan.popular ? '2px solid #3b82f6' : '1px solid #1e293b',
                 position: 'relative',
-                transition: 'transform 0.3s ease',
                 display: 'flex',
                 flexDirection: 'column',
                 height: '100%'
@@ -144,7 +153,7 @@ export default function PricingSection() {
               <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 40px 0', flexGrow: 1 }}>
                 {plan.features.map((feature) => (
                   <li key={feature} style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px', fontSize: '0.9rem', color: '#e2e8f0' }}>
-                    <Check size={16} className="text-green-500" />
+                    <Check size={16} color="#22c55e" />
                     {feature}
                   </li>
                 ))}
@@ -152,6 +161,7 @@ export default function PricingSection() {
 
               <a 
                 href={getStoreUrl(plan.credits)}
+                onClick={handlePurchase}
                 style={{
                   display: 'block',
                   textAlign: 'center',
@@ -165,7 +175,7 @@ export default function PricingSection() {
                   transition: 'opacity 0.2s'
                 }}
               >
-                {!isLoaded ? "Loading..." : plan.buttonText}
+                {!isLoaded ? "Loading..." : isSignedIn ? plan.buttonText : "Sign in to Buy"}
               </a>
             </div>
           ))}

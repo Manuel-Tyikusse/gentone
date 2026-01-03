@@ -8,7 +8,7 @@ const isPublicRoute = createRouteMatcher([
   '/terms(.*)',
   '/privacy(.*)',
   '/cookies(.*)',
-  '/api/webhook/dodo(.*)',]);
+  ]);
 
 export default clerkMiddleware(async (auth, request) => {
   if (!isPublicRoute(request)) {
