@@ -84,55 +84,47 @@ import clientPromise from "@/lib/mongodb";
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    
-    console.log("📦 Webhook recebido:", JSON.stringify(body, null, 2));
+    console.log("📦 Webhook recebido para GenTone:", JSON.stringify(body, null, 2));
 
     const eventType = body.type;
     const data = body.data;
 
     if (eventType === "payment.success") {
-      // Agora buscamos o userId que virá nos metadados do checkout
       const externalUserId = data.metadata?.user_id; 
       const transactionId = data.transaction_id;
-      
-      // Captura os créditos configurados no Metadata (ex: 15, 60, 200)
       const creditsToAdd = Number(data.metadata?.credits) || 0;
 
       if (!externalUserId) {
-        console.error("❌ Erro: user_id não encontrado nos metadados do webhook.");
         return NextResponse.json({ error: "No user_id in metadata" }, { status: 400 });
       }
 
-      if (creditsToAdd > 0) {
-        const client = await clientPromise;
-        const db = client.db("gentone");
+      const client = await clientPromise;
+      const db = client.db("gentone");
 
-        const result = await db.collection("users").updateOne(
-          { 
-            // BUSCA PELO CAMPO userId DO SEU BANCO DE DADOS
-            userId: externalUserId,
-            processedOrders: { $ne: transactionId } 
-          },
-          { 
-            $inc: { credits: creditsToAdd },
-            $push: { processedOrders: transactionId as any },
-            $set: { 
-              // Define o nome do plano baseado nos créditos comprados
-              plan: creditsToAdd === 15 ? "Starter" : creditsToAdd === 60 ? "Pro Creator" : "Elite Agency",
-              lastBillingDate: new Date(),
-              isPro: true 
-            }
+      // ALTERAÇÃO CRÍTICA: Mudamos de "users" para "profiles" como está no seu Atlas
+      const result = await db.collection("profiles").updateOne(
+        { 
+          userId: externalUserId, 
+          processedOrders: { $ne: transactionId } 
+        },
+        { 
+          $inc: { credits: creditsToAdd },
+          $push: { processedOrders: transactionId as any },
+          $set: { 
+            plan: creditsToAdd === 15 ? "Starter" : creditsToAdd === 60 ? "Pro" : "Elite",
+            isPro: true,
+            lastPayment: new Date()
           }
-        );
-
-        if (result.matchedCount === 0) {
-          console.warn(`⚠️ Utilizador com userId ${externalUserId} não encontrado no banco.`);
-          return NextResponse.json({ error: "User not found" }, { status: 404 });
         }
+      );
 
-        console.log(`✅ Sucesso! ${creditsToAdd} créditos adicionados ao userId: ${externalUserId}`);
-        return NextResponse.json({ message: "Credits added" });
+      if (result.matchedCount === 0) {
+        console.warn(`⚠️ Utilizador ${externalUserId} não encontrado na coleção profiles.`);
+        return NextResponse.json({ error: "User not found in profiles" }, { status: 404 });
       }
+
+      console.log(`✅ Sucesso! ${creditsToAdd} créditos adicionados ao profile ${externalUserId}`);
+      return NextResponse.json({ message: "Credits added to profile" });
     }
 
     return NextResponse.json({ message: "Event ignored" });
