@@ -450,6 +450,7 @@ import CopyButton from "@/components/CopyButton";
 export default function DashboardPage() {
   const { isLoaded, isSignedIn, user } = useUser();
   const [credits, setCredits] = useState<number | null>(null);
+  const [plan, setPlan] = useState<string>("Free Plan"); // Estado para armazenar o nome do plano
   const [loading, setLoading] = useState(false);
   const [script, setScript] = useState("");
   const [statusMessage, setStatusMessage] = useState("");
@@ -459,7 +460,11 @@ export default function DashboardPage() {
     async function loadData() {
       if (isLoaded && isSignedIn) {
         const res = await getUserProfile();
-        if (res.success) setCredits(res.credits);
+        if (res.success) {
+          setCredits(res.credits);
+          // Atualiza o plano com o valor real do MongoDB (ex: "Starter", "Pro")
+          if (res.plan) setPlan(res.plan); 
+        }
       }
     }
     loadData();
@@ -481,7 +486,7 @@ export default function DashboardPage() {
       tone: formData.get("tone") as string,
       duration: formData.get("duration") as string,
       targetAudience: formData.get("targetAudience") as string,
-      platform: formData.get("platform") as string // Novo campo adicionado
+      platform: formData.get("platform") as string 
     };
 
     try {
@@ -490,7 +495,10 @@ export default function DashboardPage() {
         setScript(res.content);
         setStatusMessage(""); 
         const profile = await getUserProfile();
-        if (profile.success) setCredits(profile.credits);
+        if (profile.success) {
+          setCredits(profile.credits);
+          if (profile.plan) setPlan(profile.plan);
+        }
       } else {
         setStatusMessage(`Error: ${res.error || "Could not generate the text"}`);
       }
@@ -541,7 +549,8 @@ export default function DashboardPage() {
               <UserButton afterSignOutUrl="/" />
               <div className="profile-info">
                 <p className="profile-name">{user?.firstName || "Creator"}</p>
-                <p className="profile-status">{credits !== null && credits > 10 ? "Pro Creator" : "Free Plan"}</p>
+                {/* ALTERAÇÃO AQUI: Agora exibe o plano vindo do banco de dados */}
+                <p className="profile-status">{plan}</p>
               </div>
             </div>
           </div>
