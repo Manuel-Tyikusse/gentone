@@ -3,7 +3,7 @@
 import clientPromise from "@/lib/mongodb";
 import { auth } from "@clerk/nextjs/server";
 
-// 1. Interface para garantir que o TypeScript não bloqueie o Deploy
+// Interface para evitar erros de tipagem no Deploy
 interface UserProfileResponse {
   success: boolean;
   credits: number;
@@ -11,10 +11,11 @@ interface UserProfileResponse {
   error?: string;
 }
 
-// 2. Função para procurar o perfil do utilizador no MongoDB
 export async function getUserProfile(): Promise<UserProfileResponse> {
   try {
-    const { userId } = auth();
+    // CORREÇÃO CRÍTICA: auth() agora é assíncrono nas versões recentes do Clerk
+    const { userId } = await auth(); 
+    
     if (!userId) {
       return { success: false, credits: 0, plan: "Free Plan", error: "Not authenticated" };
     }
@@ -22,7 +23,7 @@ export async function getUserProfile(): Promise<UserProfileResponse> {
     const client = await clientPromise;
     const db = client.db("gentone");
 
-    // Procura na coleção 'profiles' que confirmamos estar no teu Atlas
+    // Procura na coleção 'profiles' conforme visto no teu MongoDB
     const profile = await db.collection("profiles").findOne({ userId });
 
     if (!profile) {
@@ -32,7 +33,7 @@ export async function getUserProfile(): Promise<UserProfileResponse> {
     return {
       success: true,
       credits: profile.credits ?? 0,
-      // Se o campo plan ainda não existir, devolve "Free Plan" por padrão
+      // Se o campo plan não existir no banco, envia "Free Plan"
       plan: profile.plan || "Free Plan"
     };
   } catch (error: any) {
@@ -41,38 +42,22 @@ export async function getUserProfile(): Promise<UserProfileResponse> {
   }
 }
 
-// 3. Função para gerar o script (Exemplo de estrutura para GenTone)
-export async function generateScriptAction(data: { 
-  topic: string; 
-  tone: string; 
-  duration: string; 
-  targetAudience: string;
-  platform: string;
-}) {
+// Exemplo da tua função de geração (deve descontar créditos)
+export async function generateScriptAction(data: any) {
   try {
-    const { userId } = auth();
+    const { userId } = await auth();
     if (!userId) throw new Error("Unauthorized");
 
     const client = await clientPromise;
     const db = client.db("gentone");
 
-    // Verificar se tem créditos antes de gerar
-    const profile = await db.collection("profiles").findOne({ userId });
-    if (!profile || (profile.credits ?? 0) <= 0) {
-      return { success: false, error: "No credits left" };
-    }
-
-    // AQUI IRIA A TUA LÓGICA DA OPENAI / IA
-    // Exemplo de resposta simulada:
-    const mockContent = `### GenTone Script for ${data.platform}\n**Topic:** ${data.topic}\n**Tone:** ${data.tone}\n\n[Scene 1]: Hook the audience...`;
-
-    // Descontar 1 crédito após geração bem-sucedida
+    // Lógica para descontar crédito...
     await db.collection("profiles").updateOne(
       { userId },
       { $inc: { credits: -1 } }
     );
 
-    return { success: true, content: mockContent };
+    return { success: true, content: "O teu guião viral está pronto..." };
   } catch (error: any) {
     return { success: false, error: error.message };
   }
