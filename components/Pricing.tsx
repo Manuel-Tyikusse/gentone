@@ -33,19 +33,28 @@
 "use client";
 
 import { Check, Zap, Rocket, Crown } from "lucide-react";
+import { useUser } from "@clerk/nextjs";
 
-// Adicionamos a interface para o e-mail do utilizador para garantir tipagem correta
-interface PricingProps {
-  userEmail?: string;
-}
+export default function PricingSection() {
+  const { user, isLoaded } = useUser();
+  const userId = user?.id; // O ID real que está no teu MongoDB Atlas
 
-export default function PricingSection({ userEmail }: PricingProps) {
-  
-  // Função para anexar o e-mail do utilizador logado ao checkout do Dodo
-  // Isso garante que o Webhook saiba exatamente a quem entregar os créditos
-  const getCheckoutUrl = (baseUrl: string) => {
-    if (!userEmail) return baseUrl;
-    return `${baseUrl}?customer_email=${encodeURIComponent(userEmail)}`;
+  // Função para gerar o link da loja com metadados e redirecionamento forçado
+  const getStoreUrl = (credits: string) => {
+    const baseUrl = "https://store.dodopayments.com/gentone";
+    
+    if (!isLoaded || !userId) return baseUrl;
+    
+    // URL da página de sucesso que criámos
+    const successUrl = "https://gentone.vercel.app/dashboard/success";
+    
+    const params = new URLSearchParams({
+      "metadata[user_id]": userId,      // Para o Webhook atualizar o perfil certo
+      "metadata[credits]": credits,     // Para o Webhook saber quanto adicionar
+      "redirect_url": successUrl        // Força o Dodo a voltar para o GenTone após pagar
+    });
+    
+    return `${baseUrl}?${params.toString()}`;
   };
 
   const plans = [
@@ -53,33 +62,30 @@ export default function PricingSection({ userEmail }: PricingProps) {
       name: "Starter",
       icon: <Zap size={24} className="text-blue-400" />,
       price: "9",
-      credits: "15 Credits",
+      credits: "15",
       description: "Perfect for trying out GenTone and creating your first scripts.",
       features: ["15 AI-Generated Scripts", "All Tones Included", "Multi-language Support", "Life-time Access"],
       buttonText: "Get Started",
-      checkoutUrl: "https://buy.dodopayments.com/p/pdt_0NVQuZjeJ7ibT1RUhgyNh", 
       popular: false
     },
     {
       name: "Pro Creator",
       icon: <Rocket size={24} className="text-blue-400" />,
       price: "27",
-      credits: "60 Credits",
+      credits: "60",
       description: "Our most popular plan for consistent content creators.",
       features: ["60 AI-Generated Scripts", "Priority AI Processing", "Advanced Tone Settings", "Commercial License", "24/7 Support"],
       buttonText: "Buy Pro Now",
-      checkoutUrl: "https://buy.dodopayments.com/p/pdt_0NVQuvs9pK7RxXYRHpU0s",
       popular: true
     },
     {
       name: "Elite Agency",
       icon: <Crown size={24} className="text-blue-400" />,
       price: "67",
-      credits: "200 Credits",
+      credits: "200",
       description: "Best value for agencies and professional YouTubers.",
       features: ["200 AI-Generated Scripts", "Early Access to New Features", "Highest Quality AI Model", "Dedicated Manager", "Unlimited History"],
       buttonText: "Go Elite",
-      checkoutUrl: "https://buy.dodopayments.com/p/pdt_0NVQvGxWWCjyPMbSTQxsS",
       popular: false
     }
   ];
@@ -91,7 +97,7 @@ export default function PricingSection({ userEmail }: PricingProps) {
         <div style={{ textAlign: 'center', marginBottom: '60px' }}>
           <h2 style={{ fontSize: '2.5rem', fontWeight: 'bold', marginBottom: '15px' }}>Simple, Credit-Based Pricing</h2>
           <p style={{ color: '#94a3b8', fontSize: '1.2rem', maxWidth: '600px', margin: '0 auto' }}>
-            No subscriptions. No monthly fees. Just buy the credits you need and use them whenever you want.
+            No subscriptions. Just buy the credits you need and use them whenever you want in GenTone.
           </p>
         </div>
 
@@ -110,8 +116,6 @@ export default function PricingSection({ userEmail }: PricingProps) {
                 flexDirection: 'column',
                 height: '100%'
               }}
-              onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-10px)'}
-              onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
             >
               {plan.popular && (
                 <div style={{ 
@@ -130,7 +134,7 @@ export default function PricingSection({ userEmail }: PricingProps) {
                   ${plan.price}
                   <span style={{ fontSize: '1rem', color: '#64748b', fontWeight: 'normal' }}>/one-time</span>
                 </div>
-                <p style={{ color: '#3b82f6', fontWeight: 'bold', fontSize: '1.1rem', marginTop: '10px' }}>{plan.credits}</p>
+                <p style={{ color: '#3b82f6', fontWeight: 'bold', fontSize: '1.1rem', marginTop: '10px' }}>{plan.credits} Credits</p>
               </div>
 
               <p style={{ color: '#94a3b8', fontSize: '0.95rem', marginBottom: '30px', lineHeight: '1.5' }}>
@@ -147,7 +151,7 @@ export default function PricingSection({ userEmail }: PricingProps) {
               </ul>
 
               <a 
-                href={getCheckoutUrl(plan.checkoutUrl)}
+                href={getStoreUrl(plan.credits)}
                 style={{
                   display: 'block',
                   textAlign: 'center',
@@ -161,7 +165,7 @@ export default function PricingSection({ userEmail }: PricingProps) {
                   transition: 'opacity 0.2s'
                 }}
               >
-                {plan.buttonText}
+                {!isLoaded ? "Loading..." : plan.buttonText}
               </a>
             </div>
           ))}
