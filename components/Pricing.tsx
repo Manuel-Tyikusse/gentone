@@ -33,16 +33,20 @@
 "use client";
 
 import { Check, Zap, Rocket, Crown } from "lucide-react";
-import { useEffect } from "react"; // 1. Importado useEffect
 
-export default function PricingSection() {
+// Adicionamos a interface para o e-mail do utilizador para garantir tipagem correta
+interface PricingProps {
+  userEmail?: string;
+}
+
+export default function PricingSection({ userEmail }: PricingProps) {
   
-  // 2. Hook para ativar o overlay do Lemon Squeezy
-  useEffect(() => {
-    if (typeof window !== "undefined" && (window as any).createLemonSqueezy) {
-      (window as any).createLemonSqueezy();
-    }
-  }, []);
+  // Função para anexar o e-mail do utilizador logado ao checkout do Dodo
+  // Isso garante que o Webhook saiba exatamente a quem entregar os créditos
+  const getCheckoutUrl = (baseUrl: string) => {
+    if (!userEmail) return baseUrl;
+    return `${baseUrl}?customer_email=${encodeURIComponent(userEmail)}`;
+  };
 
   const plans = [
     {
@@ -53,7 +57,7 @@ export default function PricingSection() {
       description: "Perfect for trying out GenTone and creating your first scripts.",
       features: ["15 AI-Generated Scripts", "All Tones Included", "Multi-language Support", "Life-time Access"],
       buttonText: "Get Started",
-      checkoutUrl: "notavailable_at_the_moment", 
+      checkoutUrl: "https://buy.dodopayments.com/p/pdt_0NVQuZjeJ7ibT1RUhgyNh", 
       popular: false
     },
     {
@@ -64,7 +68,7 @@ export default function PricingSection() {
       description: "Our most popular plan for consistent content creators.",
       features: ["60 AI-Generated Scripts", "Priority AI Processing", "Advanced Tone Settings", "Commercial License", "24/7 Support"],
       buttonText: "Buy Pro Now",
-      checkoutUrl: "notavailable_at_the_moment",
+      checkoutUrl: "https://buy.dodopayments.com/p/pdt_0NVQuvs9pK7RxXYRHpU0s",
       popular: true
     },
     {
@@ -75,7 +79,7 @@ export default function PricingSection() {
       description: "Best value for agencies and professional YouTubers.",
       features: ["200 AI-Generated Scripts", "Early Access to New Features", "Highest Quality AI Model", "Dedicated Manager", "Unlimited History"],
       buttonText: "Go Elite",
-      checkoutUrl: "notavailable_at_the_moment",
+      checkoutUrl: "https://buy.dodopayments.com/p/pdt_0NVQvGxWWCjyPMbSTQxsS",
       popular: false
     }
   ];
@@ -142,10 +146,8 @@ export default function PricingSection() {
                 ))}
               </ul>
 
-              {/* 4. Mudança aqui: Usamos <a> em vez de <Link> e adicionamos a classe do Lemon */}
               <a 
-                href={plan.checkoutUrl}
-                className="lemonsqueezy-button"
+                href={getCheckoutUrl(plan.checkoutUrl)}
                 style={{
                   display: 'block',
                   textAlign: 'center',
@@ -166,8 +168,8 @@ export default function PricingSection() {
         </div>
 
         <div style={{ marginTop: '60px', textAlign: 'center' }}>
-          <p style={{ color: '#64748b', fontSize: '0.9rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-            Secure checkout powered by Lemon Squeezy 🍋
+          <p style={{ color: '#64748b', fontSize: '0.8rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+            Secure checkout powered by Dodo Payments 🦤
           </p>
         </div>
       </div>
