@@ -78,7 +78,6 @@
 //     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
 //   }
 // }
-
 import { NextResponse } from "next/server";
 import clientPromise from "@/lib/mongodb";
 
@@ -86,19 +85,23 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
     
-    // Log para veres exatamente o que o Dodo está a enviar no terminal do Vercel
     console.log("📦 Webhook recebido:", JSON.stringify(body, null, 2));
 
     const eventType = body.type;
     const data = body.data;
 
-    // Processar quando o pagamento for bem-sucedido
     if (eventType === "payment.success") {
-      const userEmail = data.customer.email;
+      // Agora buscamos o userId que virá nos metadados do checkout
+      const externalUserId = data.metadata?.user_id; 
       const transactionId = data.transaction_id;
       
-      // Captura os créditos que configuraste no Metadata do Dodo
+      // Captura os créditos configurados no Metadata (ex: 15, 60, 200)
       const creditsToAdd = Number(data.metadata?.credits) || 0;
+
+      if (!externalUserId) {
+        console.error("❌ Erro: user_id não encontrado nos metadados do webhook.");
+        return NextResponse.json({ error: "No user_id in metadata" }, { status: 400 });
+      }
 
       if (creditsToAdd > 0) {
         const client = await clientPromise;
@@ -106,15 +109,16 @@ export async function POST(req: Request) {
 
         const result = await db.collection("users").updateOne(
           { 
-            email: userEmail,
-            // Evita processar a mesma transação duas vezes
+            // BUSCA PELO CAMPO userId DO SEU BANCO DE DADOS
+            userId: externalUserId,
             processedOrders: { $ne: transactionId } 
           },
           { 
             $inc: { credits: creditsToAdd },
             $push: { processedOrders: transactionId as any },
             $set: { 
-              plan: creditsToAdd === 15 ? "Starter" : creditsToAdd === 60 ? "Pro" : "Elite",
+              // Define o nome do plano baseado nos créditos comprados
+              plan: creditsToAdd === 15 ? "Starter" : creditsToAdd === 60 ? "Pro Creator" : "Elite Agency",
               lastBillingDate: new Date(),
               isPro: true 
             }
@@ -122,11 +126,11 @@ export async function POST(req: Request) {
         );
 
         if (result.matchedCount === 0) {
-          console.warn(`⚠️ Utilizador ${userEmail} não encontrado no banco.`);
+          console.warn(`⚠️ Utilizador com userId ${externalUserId} não encontrado no banco.`);
           return NextResponse.json({ error: "User not found" }, { status: 404 });
         }
 
-        console.log(`✅ Sucesso! ${creditsToAdd} créditos adicionados a ${userEmail}`);
+        console.log(`✅ Sucesso! ${creditsToAdd} créditos adicionados ao userId: ${externalUserId}`);
         return NextResponse.json({ message: "Credits added" });
       }
     }
