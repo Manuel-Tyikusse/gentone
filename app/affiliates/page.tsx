@@ -1,10 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { Zap, DollarSign, Users, BarChart3, ArrowRight, Globe, ShieldCheck } from "lucide-react";
+import { Zap, DollarSign, Users, BarChart3, ArrowRight, Globe, ShieldCheck, Link as LinkIcon } from "lucide-react";
 
 export default function AffiliatesPage() {
-  const signupLink = "notavailable_at_the_moment";
+  // Replace this with your Google Form or Typeform link to collect affiliate applications
+  // Substitua o 'seu-email@exemplo.com' pelo seu e-mail real
+   const signupLink = "gentone.affiliates@gmail.com?subject=GenTone Affiliate Application&body=Hello! I want to join the GenTone Affiliate Program. My name is [Name] and I plan to promote GenTone on [Platform/Social Media].";
 
   return (
     <div style={{ minHeight: '100vh', background: '#020617', color: 'white', fontFamily: 'sans-serif' }}>
@@ -26,7 +28,7 @@ export default function AffiliatesPage() {
           Partner with GenTone & <span style={{ color: '#3b82f6' }}>Earn 30%</span>
         </h1>
         <p style={{ fontSize: '1.25rem', color: '#94a3b8', marginBottom: '40px', maxWidth: '700px', margin: '0 auto 40px auto', lineHeight: '1.6' }}>
-          Promote the next generation of AI scriptwriting. Get recurring commissions for every creator you bring to our platform.
+          Promote the most powerful AI scriptwriter for creators. Get a 30% commission for every sale made through your unique link.
         </p>
         <Link 
           href={signupLink}
@@ -37,7 +39,7 @@ export default function AffiliatesPage() {
             boxShadow: '0 10px 20px -10px rgba(37, 99, 235, 0.5)'
           }}
         >
-          Join Program Now <ArrowRight size={20} />
+          Apply to Join Now <ArrowRight size={20} />
         </Link>
       </section>
 
@@ -47,20 +49,20 @@ export default function AffiliatesPage() {
           
           <div className="benefit-card">
             <div className="icon-box"><DollarSign size={24} color="#3b82f6" /></div>
-            <h3>30% Recurring Commission</h3>
-            <p>Don't just get paid once. Earn every single month for as long as your referrals stay subscribed.</p>
+            <h3>High Commission</h3>
+            <p>Earn 30% on every credit pack sold. Whether it's the Starter or Elite plan, you get your fair share in dollars.</p>
           </div>
 
           <div className="benefit-card">
-            <div className="icon-box"><BarChart3 size={24} color="#3b82f6" /></div>
-            <h3>Real-time Analytics</h3>
-            <p>Access your personal dashboard to track clicks, conversions, and pending payouts in real-time.</p>
+            <div className="icon-box"><LinkIcon size={24} color="#3b82f6" /></div>
+            <h3>Simple Tracking</h3>
+            <p>Our custom tracking system uses cookies to ensure you get credited even if the user buys weeks later.</p>
           </div>
 
           <div className="benefit-card">
             <div className="icon-box"><ShieldCheck size={24} color="#3b82f6" /></div>
-            <h3>60-Day Cookie Window</h3>
-            <p>We use long-term cookies. If they click your link and buy within 60 days, the commission is yours.</p>
+            <h3>30-Day Cookie</h3>
+            <p>If a user clicks your link and purchases within 30 days, the commission is automatically yours.</p>
           </div>
 
         </div>
@@ -74,24 +76,24 @@ export default function AffiliatesPage() {
           <div className="step-item">
             <span className="step-circle">1</span>
             <div>
-              <h4>Sign Up</h4>
-              <p>Register via Dodo Payments. It takes less than 5 minutes to get approved.</p>
+              <h4>Get Approved</h4>
+              <p>Apply to our program. Once approved, we will assign you a unique Affiliate ID (e.g., "yourname").</p>
             </div>
           </div>
 
           <div className="step-item">
             <span className="step-circle">2</span>
             <div>
-              <h4>Spread the word</h4>
-              <p>Use your unique link on YouTube, TikTok, Blogs, or Twitter to showcase GenTone's power.</p>
+              <h4>Share Your Link</h4>
+              <p>Add your ID to our URL: <code>gentone.vercel.app/?aff=YOUR_ID</code> and share it with your audience.</p>
             </div>
           </div>
 
           <div className="step-item">
             <span className="step-circle">3</span>
             <div>
-              <h4>Get Paid</h4>
-              <p>Commissions are paid out automatically every month directly to your account.</p>
+              <h4>Earn in Dollars</h4>
+              <p>Track your sales and receive your 30% payouts monthly via PayPal or Bank Transfer.</p>
             </div>
           </div>
         </div>
@@ -100,9 +102,9 @@ export default function AffiliatesPage() {
       {/* Final Call to Action */}
       <footer style={{ padding: '100px 20px', textAlign: 'center', borderTop: '1px solid #1e293b', background: 'linear-gradient(to bottom, #020617, #0f172a)' }}>
         <h2 style={{ fontSize: '2rem', marginBottom: '20px' }}>Ready to grow with GenTone?</h2>
-        <p style={{ color: '#94a3b8', marginBottom: '30px' }}>Start earning from the first day.</p>
+        <p style={{ color: '#94a3b8', marginBottom: '30px' }}>Start turning your traffic into profit today.</p>
         <Link href={signupLink} target="_blank" style={{ color: '#3b82f6', fontWeight: 'bold', textDecoration: 'none', fontSize: '1.3rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-          Become an Affiliate today <Zap size={20} fill="#3b82f6" />
+          Apply for the Affiliate Program <Zap size={20} fill="#3b82f6" />
         </Link>
       </footer>
 
@@ -119,6 +121,8 @@ export default function AffiliatesPage() {
         .step-item h4 { margin: 0 0 4px 0; font-size: 1.3rem; font-weight: bold; }
         .step-item p { color: #94a3b8; margin: 0; font-size: 1.1rem; }
 
+        code { background: #1e293b; color: #60a5fa; padding: 2px 6px; border-radius: 4px; font-family: monospace; font-size: 0.95rem; }
+
         @media (max-width: 768px) {
           nav { padding: 20px; }
           .step-item { flex-direction: column; text-align: center; }
@@ -126,4 +130,5 @@ export default function AffiliatesPage() {
       `}} />
     </div>
   );
+}
 }

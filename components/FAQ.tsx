@@ -29,7 +29,7 @@ export default function FAQ() {
     },
     {
       question: "Is the payment secure?",
-      answer: "Absolutely. All payments are processed by Lemon Squeezy, a world leader in secure software payments. We never store or even see your credit card information."
+      answer: "Absolutely. All payments are processed by Dodo Payments, a world leader in secure software payments. We never store or even see your credit card information."
     }
   ];
 

@@ -41,20 +41,40 @@ export default function PricingSection() {
   const userId = user?.id; 
   const router = useRouter();
 
-  // Função para gerar o link da loja com metadados e redirecionamento forçado
+  /**
+   * FUNÇÃO AUXILIAR: Lê o cookie de afiliado salvo pelo layout.tsx
+   */
+  const getAffiliateId = () => {
+    if (typeof document === "undefined") return null;
+    const name = "gentone_aff_id=";
+    const ca = document.cookie.split(';');
+    for (let i = 0; i < ca.length; i++) {
+      let c = ca[i].trim();
+      if (c.indexOf(name) === 0) return c.substring(name.length, c.length);
+    }
+    return null;
+  };
+
+  // Função para gerar o link da loja com metadados e rastreio de afiliado
   const getStoreUrl = (credits: string) => {
     const baseUrl = "https://store.dodopayments.com/gentone";
     
-    // Se não estiver logado, não geramos o link real ainda (o onClick resolve isso)
+    // Se não estiver logado, não geramos o link real ainda
     if (!isLoaded || !userId) return "#";
     
     const successUrl = "https://gentone.vercel.app/dashboard/success";
+    const affId = getAffiliateId(); // Tenta ler o ID do afiliado do cookie
     
     const params = new URLSearchParams({
-      "metadata[user_id]": userId,      // Para o Webhook atualizar o perfil
-      "metadata[credits]": credits,     // Para o Webhook saber quanto adicionar
-      "redirect_url": successUrl        // Força o retorno ao GenTone
+      "metadata[user_id]": userId,      
+      "metadata[credits]": credits,     
+      "redirect_url": successUrl        
     });
+
+    // Se houver um afiliado rastreado, adicionamos aos metadados
+    if (affId) {
+      params.append("metadata[aff_id]", affId);
+    }
     
     return `${baseUrl}?${params.toString()}`;
   };

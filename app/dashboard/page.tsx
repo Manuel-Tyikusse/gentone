@@ -436,13 +436,12 @@
 //       `}</style>
 //     </div>
 //   );
-
 "use client";
 
 import { useState, useEffect } from "react";
 import { UserButton, useUser } from "@clerk/nextjs";
 import { getUserProfile, generateScriptAction } from "@/app/actions/script-actions";
-import { Loader2, Sparkles, AlertCircle, History, Zap, Menu, X, Video } from "lucide-react"; 
+import { Loader2, Sparkles, AlertCircle, History, Zap, Menu, X, Video, Target } from "lucide-react"; 
 import ReactMarkdown from 'react-markdown';
 import Link from "next/link";
 import CopyButton from "@/components/CopyButton";
@@ -450,7 +449,7 @@ import CopyButton from "@/components/CopyButton";
 export default function DashboardPage() {
   const { isLoaded, isSignedIn, user } = useUser();
   const [credits, setCredits] = useState<number | null>(null);
-  const [plan, setPlan] = useState<string>("Free Plan"); // Estado para armazenar o nome do plano
+  const [plan, setPlan] = useState<string>("Free Plan");
   const [loading, setLoading] = useState(false);
   const [script, setScript] = useState("");
   const [statusMessage, setStatusMessage] = useState("");
@@ -462,7 +461,6 @@ export default function DashboardPage() {
         const res = await getUserProfile();
         if (res.success) {
           setCredits(res.credits);
-          // Atualiza o plano com o valor real do MongoDB (ex: "Starter", "Pro")
           if (res.plan) setPlan(res.plan); 
         }
       }
@@ -483,6 +481,7 @@ export default function DashboardPage() {
     const formData = new FormData(e.currentTarget);
     const data = {
       topic: formData.get("topic") as string,
+      niche: formData.get("niche") as string, // NOVO CAMPO ADICIONADO
       tone: formData.get("tone") as string,
       duration: formData.get("duration") as string,
       targetAudience: formData.get("targetAudience") as string,
@@ -515,7 +514,6 @@ export default function DashboardPage() {
   return (
     <div className="dashboard-layout">
       
-      {/* Mobile Header */}
       <header className="mobile-header">
         <span className="logo-text">GenTone</span>
         <button className="menu-toggle" onClick={() => setIsSidebarOpen(!isSidebarOpen)}>
@@ -523,7 +521,6 @@ export default function DashboardPage() {
         </button>
       </header>
 
-      {/* Sidebar */}
       <aside className={`sidebar-container ${isSidebarOpen ? 'show' : ''}`}>
         <div className="sidebar-inner">
           <div className="sidebar-top">
@@ -549,7 +546,6 @@ export default function DashboardPage() {
               <UserButton afterSignOutUrl="/" />
               <div className="profile-info">
                 <p className="profile-name">{user?.firstName || "Creator"}</p>
-                {/* ALTERAÇÃO AQUI: Agora exibe o plano vindo do banco de dados */}
                 <p className="profile-status">{plan}</p>
               </div>
             </div>
@@ -557,7 +553,6 @@ export default function DashboardPage() {
         </div>
       </aside>
 
-      {/* Main Content */}
       <main className="main-content">
         <div className="content-container">
           
@@ -569,13 +564,19 @@ export default function DashboardPage() {
           <form onSubmit={handleGenerate} className="main-form">
             <div className="form-header-row">
               <h2 className="form-header">Script Configuration</h2>
-              <div className="badge-platform"><Video size={14} /> AI Engine v2.0</div>
+              <div className="badge-platform"><Video size={14} /> AI Engine v2.1</div>
             </div>
             
             <div className="form-grid">
               <div className="field full-width">
                 <label>Video Topic / Idea</label>
                 <input name="topic" required placeholder="Ex: 5 ways to sell your SaaS with AI" />
+              </div>
+
+              {/* NOVO CAMPO: NICHO (INPUT DE TEXTO) */}
+              <div className="field full-width">
+                <label>Your Niche</label>
+                <input name="niche" required placeholder="Ex: Digital Marketing, Fitness, Real Estate..." />
               </div>
 
               <div className="field">
