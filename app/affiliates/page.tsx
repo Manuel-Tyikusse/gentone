@@ -6,7 +6,7 @@ import { Zap, DollarSign, Users, BarChart3, ArrowRight, Globe, ShieldCheck, Link
 export default function AffiliatesPage() {
   // Replace this with your Google Form or Typeform link to collect affiliate applications
   // Substitua o 'seu-email@exemplo.com' pelo seu e-mail real
-   const signupLink = "gentone.affiliates@gmail.com?subject=GenTone Affiliate Application&body=Hello! I want to join the GenTone Affiliate Program. My name is [Name] and I plan to promote GenTone on [Platform/Social Media].";
+   const signupLink = "mailto:gentone.affiliates@gmail.com?subject=GenTone Affiliate Application&body=Hello! I want to join the GenTone Affiliate Program. My name is [Name] and I plan to promote GenTone on [Platform/Social Media].";
 
   return (
     <div style={{ minHeight: '100vh', background: '#020617', color: 'white', fontFamily: 'sans-serif' }}>
