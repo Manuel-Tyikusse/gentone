@@ -530,7 +530,7 @@ export default function DashboardPage() {
               <div className="credits-display">
                 <span className="label">AVAILABLE CREDITS</span>
                 <span className="value">{credits ?? '0'}</span>
-                <Link href="/dashboard/pricing" className="btn-upgrade">
+                <Link href="https://gentone.vercel.app/#pricing" className="btn-upgrade">
                   <Zap size={14} fill="currentColor" /> Upgrade Plan
                 </Link>
               </div>
