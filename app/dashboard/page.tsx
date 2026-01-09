@@ -642,7 +642,7 @@ export default function DashboardPage() {
           {statusMessage && (
             <div className={`alert-box ${hasNoCredits ? 'alert-error' : ''}`}>
               <AlertCircle size={18} /> <span>{statusMessage}</span>
-              {hasNoCredits && <Link href="/dashboard/pricing" className="get-credits-link">Upgrade Now</Link>}
+              {hasNoCredits && <Link href="https://gentone.vercel.app/#pricing" className="get-credits-link">Upgrade Now</Link>}
             </div>
           )}
 
